@@ -1,6 +1,7 @@
 package txstruct
 
 import (
+	"reflect"
 	"time"
 )
 
@@ -21,15 +22,31 @@ type TxInterface interface {
 
 //inner_check_by_compile 在编译时,检查各个结构体是否进行正常书写.
 // 每个通信结构体都要写到这里面去,因为解析器还依赖了这个函数.
-func inner_check_by_compile() []TxInterface {
+func inner_check_by_compile() ([]TxInterface, []interface{}) {
 	sliceTx := make([]TxInterface, 0)
+	sliceOrig := make([]interface{}, 0)
 	sliceTx = append(sliceTx, new(BaseDataTx))
+	sliceOrig = append(sliceOrig, BaseDataTx{})
 	sliceTx = append(sliceTx, new(UnknownNotice))
+	sliceOrig = append(sliceOrig, UnknownNotice{})
 	sliceTx = append(sliceTx, new(LoginReq))
+	sliceOrig = append(sliceOrig, LoginReq{})
 	sliceTx = append(sliceTx, new(LoginRsp))
+	sliceOrig = append(sliceOrig, LoginRsp{})
 	sliceTx = append(sliceTx, new(ReportReq))
+	sliceOrig = append(sliceOrig, ReportReq{})
 	sliceTx = append(sliceTx, new(ReportRsp))
-	return sliceTx
+	sliceOrig = append(sliceOrig, ReportRsp{})
+	//
+	if len(sliceTx) != len(sliceOrig) {
+		panic("使用指针类型的时候,解析器无法工作,待优化")
+	}
+	for i := 0; i < len(sliceTx); i++ {
+		if sliceTx[i].CALC_TN(false) != reflect.TypeOf(sliceOrig[i]).Name() {
+			panic("使用指针类型的时候,解析器无法工作,待优化")
+		}
+	}
+	return sliceTx, sliceOrig
 }
 
 //BaseDataTx 通信结构体的基本数据(每个通信结构体里面都要有它们)

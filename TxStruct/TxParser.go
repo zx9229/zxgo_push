@@ -20,7 +20,7 @@ func New_TxParser() *TxParser {
 
 //CalcMapStr2Type omit
 func CalcMapStr2Type() map[string]reflect.Type {
-	sliceData := inner_check_by_compile()
+	_, sliceData := inner_check_by_compile()
 
 	cacheData := map[string]reflect.Type{}
 	for _, element := range sliceData {
