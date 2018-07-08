@@ -1,6 +1,7 @@
 package businessservice
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -15,6 +16,7 @@ type BusinessService struct {
 	methods map[string]reflect.Value
 	parser  *txstruct.TxParser
 	manager *wsconnectionmanager.WSConnectionManager
+	cache   *CacheData
 }
 
 //New_BusinessService omit
@@ -29,6 +31,8 @@ func New_BusinessService() *BusinessService {
 	curData.manager.CbConnected = curData.handleConnected
 	curData.manager.CbDisconnected = curData.handleDisconnected
 	curData.manager.CbReceive = curData.handleReceive
+	//
+	curData.cache = New_CacheData()
 	//
 	return curData
 }
@@ -117,12 +121,117 @@ func (thls *BusinessService) handleReceive(conn *wsconnectionmanager.WSConnectio
 	}
 }
 
+const (
+	ErrMsgEmpty             = ""
+	ErrMsgSUCCESS           = "SUCCESS"
+	ErrMsgUserIdNotExist    = "user id not exist"
+	ErrMsgIncorrectPassword = "incorrect password"
+	ErrMsgInvalidLoginType  = "invalid login type"
+	ErrMsgUserHasLoggedIn   = "user has logged in"
+	ErrMsgInvalidCategory   = "invalid category"
+)
+
 //LoginReq omit
-func (thls *BusinessService) LoginReq(dataReq *txstruct.LoginReq) *txstruct.LoginRsp {
-	rspData := new(txstruct.LoginRsp)
-	rspData.CALC_TN(true)
-	rspData.BaseDataRsp.Code = 0
-	rspData.BaseDataRsp.Message = "SUCCESS"
-	rspData.ReqData = dataReq
-	return rspData
+func (thls *BusinessService) LoginReq(conn *wsconnectionmanager.WSConnection, req *txstruct.LoginReq) *txstruct.LoginRsp {
+	rsp := new(txstruct.LoginRsp)
+	rsp.CALC_TN(true)
+	rsp.BaseDataRsp.Code = 0
+	rsp.BaseDataRsp.Message = ErrMsgEmpty
+	rsp.ReqData = req
+
+	for range "1" {
+		if int64(len(thls.cache.AllUser)) < req.UserID {
+			rsp.BaseDataRsp.Code = 1
+			rsp.BaseDataRsp.Message = ErrMsgUserIdNotExist
+			break
+		}
+		if thls.cache.AllUser[req.UserID].Base.Password != req.Password {
+			rsp.BaseDataRsp.Code = 1
+			rsp.BaseDataRsp.Message = ErrMsgIncorrectPassword
+			break
+		}
+		if (LoginTypeNA < req.Way && req.Way < LoginTypeEND) == false {
+			rsp.BaseDataRsp.Code = 1
+			rsp.BaseDataRsp.Message = ErrMsgInvalidLoginType
+			break
+		}
+		curLoginInfo := thls.cache.AllUser[req.UserID].State[req.Way]
+		if curLoginInfo.conn != nil && !req.ForceLogin {
+			rsp.BaseDataRsp.Code = 1
+			rsp.BaseDataRsp.Message = ErrMsgUserHasLoggedIn
+			break
+		}
+		if curLoginInfo.conn != nil {
+			//TODO:关闭之前,发送一个"您被踢下线了"的消息
+			curLoginInfo.conn.Close()
+		}
+
+		curLoginInfo.conn = conn
+		//TODO:给连接附加登录信息的结构体指针
+
+		if 0 <= req.LastMsgID {
+			curLoginInfo.LastRecvID = req.LastMsgID
+			//TODO:哪些消息尚未推送,把它们推送过去
+		}
+	}
+
+	if rsp.Message == ErrMsgEmpty {
+		rsp.BaseDataRsp.Code = 0
+		rsp.BaseDataRsp.Message = ErrMsgSUCCESS
+	} else {
+		rsp.BaseDataRsp.Code = 1
+	}
+
+	return rsp
+}
+
+//ReportReq omit
+func (thls *BusinessService) ReportReq(conn *wsconnectionmanager.WSConnection, req *txstruct.ReportReq) *txstruct.ReportRsp {
+	rsp := new(txstruct.ReportRsp)
+	rsp.CALC_TN(true)
+	rsp.BaseDataRsp.Code = 0
+	rsp.BaseDataRsp.Message = ErrMsgEmpty
+	rsp.ReqData = req
+
+	for range "1" {
+		//TODO:用户未登录,就校验随附密码,失败就拒绝
+		if _, ok := thls.cache.AllCategory[req.Category]; !ok {
+			rsp.BaseDataRsp.Message = ErrMsgInvalidCategory
+			break
+		}
+
+		reportData := convertToReportData(req)
+		reportData.ID = thls.cache.LastPushID + 1
+		thls.cache.LastPushID = reportData.ID
+
+		//TODO:待优化,抽离成订阅管理器
+		if true {
+			jsonByte, _ := json.Marshal(reportData)
+			jsonStr := string(jsonByte)
+
+			for _, userData := range thls.cache.AllUser {
+				if userData == nil {
+					continue
+				}
+				if !userData.SubInfo.ShouldSend(reportData.UserID, reportData.Category) {
+					continue
+				}
+				for _, stateData := range userData.State {
+					if stateData.conn == nil {
+						continue
+					}
+					stateData.conn.Send(jsonStr)
+				}
+			}
+		}
+	}
+
+	if rsp.BaseDataRsp.Message == ErrMsgEmpty {
+		rsp.BaseDataRsp.Code = 0
+		rsp.BaseDataRsp.Message = ErrMsgSUCCESS
+	} else {
+		rsp.BaseDataRsp.Code = 1
+	}
+
+	return rsp
 }

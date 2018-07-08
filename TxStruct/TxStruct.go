@@ -77,10 +77,11 @@ type UnknownNotice struct {
 type LoginReq struct {
 	BaseDataTx
 	BaseDataReq
-	UserID    int64  //
-	Password  string //
-	Way       int    //登录方式(手机登录,网页登录,PC登录)
-	LastMsgID int64  //全局消息,我接收到哪一个了(-1代表无效字段)
+	UserID     int64  //
+	Password   string //
+	Way        int    //登录方式(手机登录,网页登录,PC登录)
+	ForceLogin bool   //强制登录(将已登录的用户踢下线)
+	LastMsgID  int64  //全局消息,我接收到哪一个了(-1代表无效字段)
 }
 
 //LoginRsp omit
@@ -94,12 +95,12 @@ type LoginRsp struct {
 type ReportReq struct {
 	BaseDataTx
 	BaseDataReq
-	UserID   int64
-	RawID    int64     //rowId
-	RawTime  time.Time //rowUpdateTime
-	Status   int       //或许你上报的消息,想表示(成功/失败)或(某某的个数)呢.
-	Message  string    //消息的详情
-	Category string    //消息所属的类别
+	UserID      int64
+	UserTagID   int64     //rowId
+	UserTagTime time.Time //rowUpdateTime
+	AttachedI   int64     //随附的一个数字
+	Message     string    //消息的详情
+	Category    string    //消息所属的类别
 }
 
 //ReportRsp omit
@@ -107,17 +108,4 @@ type ReportRsp struct {
 	BaseDataTx
 	BaseDataRsp
 	ReqData *ReportReq
-}
-
-//ReportData omit
-type ReportData struct {
-	ID   int64     `xorm:"notnull pk"` //数据库的递增序号.
-	Time time.Time //插入数据库的时刻.
-	//
-	UserID   int64
-	RawID    int64     //rowId
-	RawTime  time.Time //rowUpdateTime
-	Status   int       //或许你上报的消息,想表示(成功/失败)或(某某的个数)呢.
-	Message  string    //消息的详情
-	Category string    //消息所属的类别
 }
