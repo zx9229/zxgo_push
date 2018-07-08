@@ -10,53 +10,23 @@ import (
 	"time"
 
 	"github.com/zx9229/zxgo_push/TxStruct"
-
-	wsconnectionmanager "github.com/zx9229/zxgo_push/WSConnectionManager"
-)
-
-const (
-	LoginTypeNA     = iota //(登录方式)0,默认值,无效值
-	LoginTypeWeb           //(登录方式)网页
-	LoginTypeMobile        //(登录方式)手机
-	LoginTypePC            //(登录方式)电脑
-	LoginTypeEND           //(登录方式)结束值,最大值的下一个
 )
 
 //CacheData 所有的缓存信息
 type CacheData struct {
-	LastUserID  int64           //最后一个注册的用户ID
-	LastPushID  int64           //最后一个推送消息的序号
-	AllCategory map[string]bool //总共有哪些种类
-	AllUser     []*UserSummary
+	LastUserID int64             //最后一个注册的用户ID
+	LastPushID int64             //最后一个推送消息的序号
+	SubBase    SubscribeBaseInfo //订阅相关的基本信息
+	AllUser    []*UserSummary
 }
 
-func New_CacheData() *CacheData {
+//New_CacheData_Original 创建初始的数据
+func New_CacheData_Original() *CacheData {
 	curData := new(CacheData)
+	curData.LastUserID = 0
+	curData.LastPushID = 0
+
 	return curData
-}
-
-//UserSummary 用户的汇总信息
-type UserSummary struct {
-	Base    UserBaseInfo
-	State   []*LoginInfo
-	SubInfo *SubscribeUserInfo
-}
-
-//UserBaseInfo 用户的基础信息
-type UserBaseInfo struct {
-	UserID     int64
-	Password   string
-	Memo       string    //备注.
-	CreateTime time.Time //创建时刻.
-	UpdateTime time.Time //更新时刻.
-}
-
-//LoginInfo 用户的登录信息
-type LoginInfo struct {
-	conn       *wsconnectionmanager.WSConnection //有值,表示在线.(这个字段不往外导出)
-	LoginType  int                               //电脑登录,网页登录,APP登录,等.
-	MaxPushID  int64                             //推送给它的最大的推送序号
-	LastRecvID int64                             //它上报的自己接收到的最后一个序号
 }
 
 ////////////////////////////////////////////////////////////////

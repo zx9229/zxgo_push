@@ -32,7 +32,7 @@ func New_BusinessService() *BusinessService {
 	curData.manager.CbDisconnected = curData.handleDisconnected
 	curData.manager.CbReceive = curData.handleReceive
 	//
-	curData.cache = New_CacheData()
+	curData.cache = New_CacheData_Original()
 	//
 	return curData
 }
@@ -150,7 +150,7 @@ func (thls *BusinessService) LoginReq(conn *wsconnectionmanager.WSConnection, re
 			rsp.BaseDataRsp.Message = ErrMsgIncorrectPassword
 			break
 		}
-		if (LoginTypeNA < req.Way && req.Way < LoginTypeEND) == false {
+		if (LoginTypeDEFAULT < req.Way && req.Way < LoginTypeEND) == false {
 			rsp.BaseDataRsp.Code = 1
 			rsp.BaseDataRsp.Message = ErrMsgInvalidLoginType
 			break
@@ -195,7 +195,7 @@ func (thls *BusinessService) ReportReq(conn *wsconnectionmanager.WSConnection, r
 
 	for range "1" {
 		//TODO:用户未登录,就校验随附密码,失败就拒绝
-		if _, ok := thls.cache.AllCategory[req.Category]; !ok {
+		if !thls.cache.SubBase.IsRegistered(req.Category) {
 			rsp.BaseDataRsp.Message = ErrMsgInvalidCategory
 			break
 		}
