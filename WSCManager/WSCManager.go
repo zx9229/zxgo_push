@@ -1,4 +1,4 @@
-package wsconnectionmanager
+package wscmanager
 
 import (
 	"errors"

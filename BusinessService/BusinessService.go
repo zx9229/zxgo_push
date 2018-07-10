@@ -8,14 +8,14 @@ import (
 	"reflect"
 
 	txstruct "github.com/zx9229/zxgo_push/TxStruct"
-	wsconnectionmanager "github.com/zx9229/zxgo_push/WSConnectionManager"
+	wscmanager "github.com/zx9229/zxgo_push/WSCManager"
 )
 
 //BusinessService omit
 type BusinessService struct {
 	methods map[string]reflect.Value
 	parser  *txstruct.TxParser
-	manager *wsconnectionmanager.WSConnectionManager
+	manager *wscmanager.WSConnectionManager
 	cache   *CacheData
 }
 
@@ -25,7 +25,7 @@ func New_BusinessService() *BusinessService {
 	//
 	curData.methods = make(map[string]reflect.Value)
 	curData.parser = txstruct.New_TxParser()
-	curData.manager = wsconnectionmanager.New_WSConnectionManager()
+	curData.manager = wscmanager.New_WSConnectionManager()
 	//
 	curData.methods = curData.calcMethods()
 	curData.manager.CbConnected = curData.handleConnected
@@ -38,7 +38,7 @@ func New_BusinessService() *BusinessService {
 }
 
 //GetConnectionManager omit
-func (thls *BusinessService) GetConnectionManager() *wsconnectionmanager.WSConnectionManager {
+func (thls *BusinessService) GetConnectionManager() *wscmanager.WSConnectionManager {
 	return thls.manager
 }
 
@@ -55,12 +55,12 @@ func (thls *BusinessService) calcMethods() map[string]reflect.Value {
 }
 
 //HandleConnected omit
-func (thls *BusinessService) handleConnected(conn *wsconnectionmanager.WSConnection) {
+func (thls *BusinessService) handleConnected(conn *wscmanager.WSConnection) {
 	log.Println(fmt.Sprintf("[   Connected][%p]", conn))
 }
 
 //HandleDisconnected omit
-func (thls *BusinessService) handleDisconnected(conn *wsconnectionmanager.WSConnection, err error) {
+func (thls *BusinessService) handleDisconnected(conn *wscmanager.WSConnection, err error) {
 	log.Println(fmt.Sprintf("[Disconnected][%p]err=%v", conn, err))
 }
 
@@ -72,7 +72,7 @@ var (
 )
 
 //HandleReceive omit
-func (thls *BusinessService) handleReceive(conn *wsconnectionmanager.WSConnection, bytes []byte) {
+func (thls *BusinessService) handleReceive(conn *wscmanager.WSConnection, bytes []byte) {
 	var err error
 	var responseMessage string
 
@@ -132,7 +132,7 @@ const (
 )
 
 //LoginReq omit
-func (thls *BusinessService) LoginReq(conn *wsconnectionmanager.WSConnection, req *txstruct.LoginReq) *txstruct.LoginRsp {
+func (thls *BusinessService) LoginReq(conn *wscmanager.WSConnection, req *txstruct.LoginReq) *txstruct.LoginRsp {
 	rsp := new(txstruct.LoginRsp)
 	rsp.CALC_TN(true)
 	rsp.BaseDataRsp.Code = 0
@@ -186,7 +186,7 @@ func (thls *BusinessService) LoginReq(conn *wsconnectionmanager.WSConnection, re
 }
 
 //ReportReq omit
-func (thls *BusinessService) ReportReq(conn *wsconnectionmanager.WSConnection, req *txstruct.ReportReq) *txstruct.ReportRsp {
+func (thls *BusinessService) ReportReq(conn *wscmanager.WSConnection, req *txstruct.ReportReq) *txstruct.ReportRsp {
 	rsp := new(txstruct.ReportRsp)
 	rsp.CALC_TN(true)
 	rsp.BaseDataRsp.Code = 0

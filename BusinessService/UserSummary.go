@@ -3,7 +3,7 @@ package businessservice
 import (
 	"time"
 
-	wsconnectionmanager "github.com/zx9229/zxgo_push/WSConnectionManager"
+	wscmanager "github.com/zx9229/zxgo_push/WSCManager"
 )
 
 const (
@@ -25,10 +25,10 @@ type UserBaseInfo struct {
 
 //UserStateInfo 用户的状态信息
 type UserStateInfo struct {
-	conn       *wsconnectionmanager.WSConnection //有值,表示在线.(这个字段不往外导出)
-	LoginType  int                               //电脑登录,网页登录,APP登录,等.
-	MaxPushID  int64                             //推送给它的最大的推送序号
-	LastRecvID int64                             //它上报的自己接收到的最后一个序号
+	conn       *wscmanager.WSConnection //有值,表示在线.(这个字段不往外导出)
+	LoginType  int                      //电脑登录,网页登录,APP登录,等.
+	MaxPushID  int64                    //推送给它的最大的推送序号
+	LastRecvID int64                    //它上报的自己接收到的最后一个序号
 }
 
 //UserSummary 用户的汇总信息
