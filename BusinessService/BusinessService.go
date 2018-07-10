@@ -13,10 +13,12 @@ import (
 
 //BusinessService omit
 type BusinessService struct {
-	methods map[string]reflect.Value
-	parser  *txstruct.TxParser
-	manager *wscmanager.WSConnectionManager
-	cache   *CacheData
+	methods    map[string]reflect.Value
+	parser     *txstruct.TxParser
+	manager    *wscmanager.WSConnectionManager
+	cache      *TotalUserManager
+	subBase    *SubscribeBaseInfo
+	LastPushID int64 //最后一个推送消息的序号
 }
 
 //New_BusinessService omit
@@ -32,7 +34,8 @@ func New_BusinessService() *BusinessService {
 	curData.manager.CbDisconnected = curData.handleDisconnected
 	curData.manager.CbReceive = curData.handleReceive
 	//
-	curData.cache = New_CacheData_Original()
+	curData.cache = New_TotalUserManager()
+	curData.subBase = New_SubscribeBaseInfo()
 	//
 	return curData
 }
@@ -62,6 +65,10 @@ func (thls *BusinessService) handleConnected(conn *wscmanager.WSConnection) {
 //HandleDisconnected omit
 func (thls *BusinessService) handleDisconnected(conn *wscmanager.WSConnection, err error) {
 	log.Println(fmt.Sprintf("[Disconnected][%p]err=%v", conn, err))
+	if conn.ExtraData != nil {
+		tmpData := conn.ExtraData.(*UserTempData)
+		tmpData.state.conn = nil
+	}
 }
 
 var (
@@ -139,40 +146,8 @@ func (thls *BusinessService) LoginReq(conn *wscmanager.WSConnection, req *txstru
 	rsp.BaseDataRsp.Message = ErrMsgEmpty
 	rsp.ReqData = req
 
-	for range "1" {
-		if int64(len(thls.cache.AllUser)) < req.UserID {
-			rsp.BaseDataRsp.Code = 1
-			rsp.BaseDataRsp.Message = ErrMsgUserIdNotExist
-			break
-		}
-		if thls.cache.AllUser[req.UserID].Base.Password != req.Password {
-			rsp.BaseDataRsp.Code = 1
-			rsp.BaseDataRsp.Message = ErrMsgIncorrectPassword
-			break
-		}
-		if (LoginTypeDEFAULT < req.Way && req.Way < LoginTypeEND) == false {
-			rsp.BaseDataRsp.Code = 1
-			rsp.BaseDataRsp.Message = ErrMsgInvalidLoginType
-			break
-		}
-		curLoginInfo := thls.cache.AllUser[req.UserID].State[req.Way]
-		if curLoginInfo.conn != nil && !req.ForceLogin {
-			rsp.BaseDataRsp.Code = 1
-			rsp.BaseDataRsp.Message = ErrMsgUserHasLoggedIn
-			break
-		}
-		if curLoginInfo.conn != nil {
-			//TODO:关闭之前,发送一个"您被踢下线了"的消息
-			curLoginInfo.conn.Close()
-		}
-
-		curLoginInfo.conn = conn
-		//TODO:给连接附加登录信息的结构体指针
-
-		if 0 <= req.LastMsgID {
-			curLoginInfo.LastRecvID = req.LastMsgID
-			//TODO:哪些消息尚未推送,把它们推送过去
-		}
+	if err := thls.cache.LoginUser(conn, req); err != nil {
+		rsp.BaseDataRsp.Message = err.Error()
 	}
 
 	if rsp.Message == ErrMsgEmpty {
@@ -195,21 +170,21 @@ func (thls *BusinessService) ReportReq(conn *wscmanager.WSConnection, req *txstr
 
 	for range "1" {
 		//TODO:用户未登录,就校验随附密码,失败就拒绝
-		if !thls.cache.SubBase.IsRegistered(req.Category) {
+		if !thls.subBase.IsRegistered(req.Category) {
 			rsp.BaseDataRsp.Message = ErrMsgInvalidCategory
 			break
 		}
 
 		reportData := convertToReportData(req)
-		reportData.ID = thls.cache.LastPushID + 1
-		thls.cache.LastPushID = reportData.ID
+		reportData.ID = thls.LastPushID + 1
+		thls.LastPushID = reportData.ID
 
 		//TODO:待优化,抽离成订阅管理器
 		if true {
 			jsonByte, _ := json.Marshal(reportData)
 			jsonStr := string(jsonByte)
 
-			for _, userData := range thls.cache.AllUser {
+			for _, userData := range thls.cache.allUser {
 				if userData == nil {
 					continue
 				}

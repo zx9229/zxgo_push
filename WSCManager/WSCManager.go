@@ -13,7 +13,8 @@ var ErrClosedByUser = errors.New("Closed By User")
 //WSConnection websocket的包装器.
 type WSConnection struct {
 	ws           *websocket.Conn
-	closedByUser bool //(用户调用了close函数)
+	closedByUser bool        //(用户调用了close函数)
+	ExtraData    interface{} //附加信息
 }
 
 //Send 略

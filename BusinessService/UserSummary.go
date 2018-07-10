@@ -14,6 +14,11 @@ const (
 	LoginTypeEND            //(登录方式)结束值,最大值的下一个
 )
 
+type UserTempData struct {
+	summary *UserSummary
+	state   *UserStateInfo
+}
+
 //UserBaseInfo 用户的基础信息
 type UserBaseInfo struct {
 	UserID     int64

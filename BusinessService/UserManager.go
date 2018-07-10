@@ -1,7 +1,11 @@
 package businessservice
 
 import (
+	"errors"
 	"time"
+
+	txstruct "github.com/zx9229/zxgo_push/TxStruct"
+	wscmanager "github.com/zx9229/zxgo_push/WSCManager"
 )
 
 //TotalUserManager 所有用户的管理器
@@ -95,4 +99,55 @@ func (thls *TotalUserManager) DeleteUser(userID int64, password string) bool {
 	//TODO:更新到数据库中.
 
 	return true
+}
+
+var (
+	ErrLogicError        = errors.New("logic error")
+	ErrUserIdNotExist    = errors.New("user id not exist")
+	ErrIncorrectPassword = errors.New("incorrect password")
+	ErrInvalidLoginType  = errors.New("invalid login type")
+	ErrUserHasLoggedIn   = errors.New("user has logged in")
+	ErrInvalidCategory   = errors.New("invalid category")
+)
+
+func (thls *TotalUserManager) LoginUser(conn *wscmanager.WSConnection, req *txstruct.LoginReq) error {
+	var err error
+	for range "1" {
+		if int64(len(thls.allUser)) < req.UserID {
+			err = ErrUserIdNotExist
+			break
+		}
+		userData := thls.allUser[req.UserID]
+		if userData == nil {
+			err = ErrUserIdNotExist
+			break
+		}
+		if userData.Base.Password != req.Password {
+			err = ErrIncorrectPassword
+			break
+		}
+		if (LoginTypeDEFAULT < req.Way && req.Way < LoginTypeEND) == false {
+			err = ErrInvalidLoginType
+			break
+		}
+		curLoginInfo := userData.State[req.Way]
+		if curLoginInfo.conn != nil && !req.ForceLogin {
+			err = ErrUserHasLoggedIn
+			break
+		}
+		if curLoginInfo.conn != nil {
+			//TODO:关闭之前,发送一个"您被踢下线了"的消息
+			curLoginInfo.conn.Close()
+		}
+
+		curLoginInfo.conn = conn
+		//TODO:给连接附加登录信息的结构体指针
+		conn.ExtraData = &UserTempData{summary: userData, state: curLoginInfo}
+
+		if 0 <= req.LastMsgID {
+			curLoginInfo.LastRecvID = req.LastMsgID
+			//TODO:哪些消息尚未推送,把它们推送过去
+		}
+	}
+	return err
 }
