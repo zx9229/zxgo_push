@@ -13,12 +13,12 @@ import (
 
 //BusinessService omit
 type BusinessService struct {
-	methods    map[string]reflect.Value
-	parser     *txstruct.TxParser
-	manager    *wscmanager.WSConnectionManager
-	cache      *UserInfoManager
-	subBase    *SubscribeBaseInfo
-	LastPushID int64 //最后一个推送消息的序号
+	methods    map[string]reflect.Value        //函数名<=>函数指针
+	parser     *txstruct.TxParser              //(通信消息)解析器
+	connMngr   *wscmanager.WSConnectionManager //连接管理器
+	userMngr   *UserInfoManager                //用户管理器
+	subBase    *SubscribeBaseInfo              //订阅器的总览
+	LastPushID int64                           //最后一个推送消息的序号
 }
 
 //New_BusinessService omit
@@ -27,14 +27,14 @@ func New_BusinessService() *BusinessService {
 	//
 	curData.methods = make(map[string]reflect.Value)
 	curData.parser = txstruct.New_TxParser()
-	curData.manager = wscmanager.New_WSConnectionManager()
+	curData.connMngr = wscmanager.New_WSConnectionManager()
 	//
 	curData.methods = curData.calcMethods()
-	curData.manager.CbConnected = curData.handleConnected
-	curData.manager.CbDisconnected = curData.handleDisconnected
-	curData.manager.CbReceive = curData.handleReceive
+	curData.connMngr.CbConnected = curData.handleConnected
+	curData.connMngr.CbDisconnected = curData.handleDisconnected
+	curData.connMngr.CbReceive = curData.handleReceive
 	//
-	curData.cache = New_UserInfoManager()
+	curData.userMngr = New_UserInfoManager()
 	curData.subBase = New_SubscribeBaseInfo()
 	curData.subBase.AddCategory("cat") //TODO:临时调试代码
 	//
@@ -43,7 +43,7 @@ func New_BusinessService() *BusinessService {
 
 //GetConnectionManager omit
 func (thls *BusinessService) GetConnectionManager() *wscmanager.WSConnectionManager {
-	return thls.manager
+	return thls.connMngr
 }
 
 func (thls *BusinessService) calcMethods() map[string]reflect.Value {
@@ -148,7 +148,7 @@ func (thls *BusinessService) LoginReq(conn *wscmanager.WSConnection, req *txstru
 	rsp.BaseDataRsp.Message = ErrMsgEmpty
 	rsp.ReqData = req
 
-	if err := thls.cache.LoginUser(conn, req); err != nil {
+	if err := thls.userMngr.LoginUser(conn, req); err != nil {
 		rsp.BaseDataRsp.Message = err.Error()
 	}
 
@@ -186,7 +186,7 @@ func (thls *BusinessService) ReportReq(conn *wscmanager.WSConnection, req *txstr
 			jsonByte, _ := json.Marshal(reportData)
 			jsonStr := string(jsonByte)
 
-			for _, userData := range thls.cache.allUser {
+			for _, userData := range thls.userMngr.allUser {
 				if userData == nil {
 					continue
 				}
@@ -222,7 +222,7 @@ func (thls *BusinessService) AddUserReq(conn *wscmanager.WSConnection, req *txst
 	rsp.ReqData = req
 
 	InitialPassword := "pwd"
-	if rsp.NewUserID = thls.cache.CreateUser(InitialPassword); 0 < rsp.NewUserID {
+	if rsp.NewUserID = thls.userMngr.CreateUser(InitialPassword); 0 < rsp.NewUserID {
 		rsp.BaseDataRsp.Code = 0
 		rsp.BaseDataRsp.Message = ErrMsgSUCCESS
 		rsp.NewPassword = InitialPassword
@@ -245,11 +245,11 @@ func (thls *BusinessService) SubscribeReq(conn *wscmanager.WSConnection, req *tx
 	for range "1" {
 		var subInfo *UserSubscriptionInfo
 		if conn.ExtraData == nil {
-			if !thls.cache.UserAndPasswordIsOk(req.OnceUID, req.OncePwd) {
+			if !thls.userMngr.UserAndPasswordIsOk(req.OnceUID, req.OncePwd) {
 				rsp.BaseDataRsp.Message = ErrMsgNotLoginAndOncePwdErr
 				break
 			}
-			subInfo = thls.cache.allUser[req.OnceUID-1].SubInfo
+			subInfo = thls.userMngr.allUser[req.OnceUID-1].SubInfo
 		} else {
 			subInfo = conn.ExtraData.(UserTempData).tInfo.SubInfo
 		}
