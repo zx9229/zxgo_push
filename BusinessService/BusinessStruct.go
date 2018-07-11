@@ -12,25 +12,6 @@ import (
 	"github.com/zx9229/zxgo_push/TxStruct"
 )
 
-//CacheData 所有的缓存信息
-type CacheData struct {
-	LastUserID int64           //最后一个注册的用户ID
-	LastPushID int64           //最后一个推送消息的序号
-	SubBase    CategoryManager //订阅相关的基本信息
-	AllUser    []*UserTotalInfo
-}
-
-//New_CacheData_Original 创建初始的数据
-func New_CacheData_Original() *CacheData {
-	curData := new(CacheData)
-	curData.LastUserID = 0
-	curData.LastPushID = 0
-
-	return curData
-}
-
-////////////////////////////////////////////////////////////////
-
 //ReportData omit
 type ReportData struct {
 	ID   int64     `xorm:"notnull pk"` //数据库的递增序号.
