@@ -17,7 +17,7 @@ type BusinessService struct {
 	parser     *txstruct.TxParser              //(通信消息)解析器
 	connMngr   *wscmanager.WSConnectionManager //连接管理器
 	userMngr   *UserInfoManager                //用户管理器
-	subBase    *SubscribeBaseInfo              //订阅器的总览
+	catgMngr   *CategoryManager                //类别管理器
 	LastPushID int64                           //最后一个推送消息的序号
 }
 
@@ -35,8 +35,8 @@ func New_BusinessService() *BusinessService {
 	curData.connMngr.CbReceive = curData.handleReceive
 	//
 	curData.userMngr = New_UserInfoManager()
-	curData.subBase = New_SubscribeBaseInfo()
-	curData.subBase.AddCategory("cat") //TODO:临时调试代码
+	curData.catgMngr = New_CategoryManager()
+	curData.catgMngr.AddCategory("cat") //TODO:临时调试代码
 	//
 	return curData
 }
@@ -172,7 +172,7 @@ func (thls *BusinessService) ReportReq(conn *wscmanager.WSConnection, req *txstr
 
 	for range "1" {
 		//TODO:用户未登录,就校验随附密码,失败就拒绝
-		if !thls.subBase.IsRegistered(req.Category) {
+		if !thls.catgMngr.IsRegistered(req.Category) {
 			rsp.BaseDataRsp.Message = ErrMsgInvalidCategory
 			break
 		}

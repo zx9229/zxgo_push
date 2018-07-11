@@ -4,24 +4,24 @@ import (
 	"strings"
 )
 
-//CagegorySep 父类别/子类别,之间的分隔符
-const CagegorySep = byte('|')
+//CategorySep 父类别/子类别,之间的分隔符
+const CategorySep = byte('|')
 
-//SubscribeBaseInfo 订阅的基本信息
-type SubscribeBaseInfo struct {
+//CategoryManager 类别管理器
+type CategoryManager struct {
 	AllCategory map[string]bool
 }
 
-//New_SubscribeBaseInfo omit
-func New_SubscribeBaseInfo() *SubscribeBaseInfo {
-	curData := new(SubscribeBaseInfo)
+//New_CategoryManager omit
+func New_CategoryManager() *CategoryManager {
+	curData := new(CategoryManager)
 	curData.AllCategory = make(map[string]bool)
 	return curData
 }
 
 //AddCategory 添加类别
-func (thls *SubscribeBaseInfo) AddCategory(data string) bool {
-	SEP := string(CagegorySep)
+func (thls *CategoryManager) AddCategory(data string) bool {
+	SEP := string(CategorySep)
 
 	for _, field := range strings.Split(data, SEP) {
 		if len(field) == 0 { //合法性校验
@@ -56,8 +56,8 @@ func (thls *SubscribeBaseInfo) AddCategory(data string) bool {
 }
 
 //DelCategory 删除类别和所有的子类别
-func (thls *SubscribeBaseInfo) DelCategory(data string) {
-	dataPrefix := data + string(CagegorySep)
+func (thls *CategoryManager) DelCategory(data string) {
+	dataPrefix := data + string(CategorySep)
 	dictDel := map[string]bool{}
 	for key := range thls.AllCategory {
 		if key == data {
@@ -73,8 +73,8 @@ func (thls *SubscribeBaseInfo) DelCategory(data string) {
 }
 
 //IsRegistered 送进去的是不是一个注册过的类别
-func (thls *SubscribeBaseInfo) IsRegistered(data string) bool {
-	dataPrefix := data + string(CagegorySep)
+func (thls *CategoryManager) IsRegistered(data string) bool {
+	dataPrefix := data + string(CategorySep)
 	for key := range thls.AllCategory {
 		if key == data {
 			return true

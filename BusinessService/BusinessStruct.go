@@ -14,9 +14,9 @@ import (
 
 //CacheData 所有的缓存信息
 type CacheData struct {
-	LastUserID int64             //最后一个注册的用户ID
-	LastPushID int64             //最后一个推送消息的序号
-	SubBase    SubscribeBaseInfo //订阅相关的基本信息
+	LastUserID int64           //最后一个注册的用户ID
+	LastPushID int64           //最后一个推送消息的序号
+	SubBase    CategoryManager //订阅相关的基本信息
 	AllUser    []*UserTotalInfo
 }
 

@@ -30,7 +30,7 @@ func (thls *UserSubscriptionInfo) UnsubUser(userID int64) {
 
 //SubCategory omit
 func (thls *UserSubscriptionInfo) SubCategory(data string) {
-	dataPrefix := data + string(CagegorySep)
+	dataPrefix := data + string(CategorySep)
 	dictDel := map[string]bool{}
 	for key := range thls.AllCategory {
 		if key == data {
@@ -62,7 +62,7 @@ func (thls *UserSubscriptionInfo) ShouldSend(userID int64, data string) bool {
 			keyLen := len(key)
 			if len(data) == keyLen {
 				return true
-			} else if data[keyLen] == CagegorySep {
+			} else if data[keyLen] == CategorySep {
 				//key  => AA|B
 				//key  => AA|BB
 				//data => AA|BB|CC
