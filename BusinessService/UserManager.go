@@ -64,7 +64,7 @@ func (thls *TotalUserManager) CreateUser(password string) int64 {
 		if us == nil {
 			continue
 		}
-		if int64(idx) != us.Base.UserID {
+		if int64(idx+1) != us.Base.UserID {
 			panic("违反了逻辑规则")
 		}
 	}
@@ -74,6 +74,25 @@ func (thls *TotalUserManager) CreateUser(password string) int64 {
 
 //DeleteUser omit
 func (thls *TotalUserManager) DeleteUser(userID int64, password string) bool {
+	if !thls.UserAndPasswordIsOk(userID, password) {
+		return false
+	}
+	for _, state := range thls.allUser[userID-1].State {
+		if state.conn == nil {
+			continue
+		}
+		//TODO:关闭之前,发送注销的消息.
+		state.conn.Close()
+	}
+
+	thls.allUser[userID-1] = nil
+	//TODO:更新到数据库中.
+
+	return true
+}
+
+//UserAndPasswordIsOk omit
+func (thls *TotalUserManager) UserAndPasswordIsOk(userID int64, password string) bool {
 	if (0 < userID && userID <= int64(len(thls.allUser))) == false {
 		return false
 	}
@@ -87,17 +106,6 @@ func (thls *TotalUserManager) DeleteUser(userID int64, password string) bool {
 	if userData.Base.Password != password {
 		return false
 	}
-	for _, state := range userData.State {
-		if state.conn == nil {
-			continue
-		}
-		//TODO:关闭之前,发送注销的消息.
-		state.conn.Close()
-	}
-
-	thls.allUser[userID-1] = nil
-	//TODO:更新到数据库中.
-
 	return true
 }
 
@@ -113,24 +121,16 @@ var (
 func (thls *TotalUserManager) LoginUser(conn *wscmanager.WSConnection, req *txstruct.LoginReq) error {
 	var err error
 	for range "1" {
-		if int64(len(thls.allUser)) < req.UserID {
-			err = ErrUserIdNotExist
-			break
-		}
-		userData := thls.allUser[req.UserID]
-		if userData == nil {
-			err = ErrUserIdNotExist
-			break
-		}
-		if userData.Base.Password != req.Password {
+		if !thls.UserAndPasswordIsOk(req.UserID, req.Password) {
 			err = ErrIncorrectPassword
 			break
 		}
+
 		if (LoginTypeDEFAULT < req.Way && req.Way < LoginTypeEND) == false {
 			err = ErrInvalidLoginType
 			break
 		}
-		curLoginInfo := userData.State[req.Way]
+		curLoginInfo := thls.allUser[req.UserID-1].State[req.Way-1]
 		if curLoginInfo.conn != nil && !req.ForceLogin {
 			err = ErrUserHasLoggedIn
 			break
@@ -142,7 +142,7 @@ func (thls *TotalUserManager) LoginUser(conn *wscmanager.WSConnection, req *txst
 
 		curLoginInfo.conn = conn
 		//TODO:给连接附加登录信息的结构体指针
-		conn.ExtraData = &UserTempData{summary: userData, state: curLoginInfo}
+		conn.ExtraData = &UserTempData{summary: thls.allUser[req.UserID-1], state: curLoginInfo}
 
 		if 0 <= req.LastMsgID {
 			curLoginInfo.LastRecvID = req.LastMsgID

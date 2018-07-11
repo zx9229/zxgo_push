@@ -155,3 +155,102 @@ func (thls *ReportRsp) TO_JSON(panicWhenError bool) string {
 }
 
 //////////////////////////////////////////////////////////////////////
+func (thls *AddUserReq) GET_TN() string {
+	return thls.TN
+}
+
+func (thls *AddUserReq) CALC_TN(modifyTN bool) string {
+	TypeName := reflect.ValueOf(*thls).Type().Name()
+	if modifyTN {
+		thls.TN = TypeName
+	}
+	return TypeName
+}
+
+func (thls *AddUserReq) TO_JSON(panicWhenError bool) string {
+	if bytes, err := json.Marshal(thls); err != nil {
+		if panicWhenError {
+			panic(err)
+		}
+		return ""
+	} else {
+		return string(bytes)
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+
+func (thls *AddUserRsp) GET_TN() string {
+	return thls.TN
+}
+
+func (thls *AddUserRsp) CALC_TN(modifyTN bool) string {
+	TypeName := reflect.ValueOf(*thls).Type().Name()
+	if modifyTN {
+		thls.TN = TypeName
+	}
+	return TypeName
+}
+
+func (thls *AddUserRsp) TO_JSON(panicWhenError bool) string {
+	if bytes, err := json.Marshal(thls); err != nil {
+		if panicWhenError {
+			panic(err)
+		}
+		return ""
+	} else {
+		return string(bytes)
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+
+func (thls *SubscribeReq) GET_TN() string {
+	return thls.TN
+}
+
+func (thls *SubscribeReq) CALC_TN(modifyTN bool) string {
+	TypeName := reflect.ValueOf(*thls).Type().Name()
+	if modifyTN {
+		thls.TN = TypeName
+	}
+	return TypeName
+}
+
+func (thls *SubscribeReq) TO_JSON(panicWhenError bool) string {
+	if bytes, err := json.Marshal(thls); err != nil {
+		if panicWhenError {
+			panic(err)
+		}
+		return ""
+	} else {
+		return string(bytes)
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+
+func (thls *SubscribeRsp) GET_TN() string {
+	return thls.TN
+}
+
+func (thls *SubscribeRsp) CALC_TN(modifyTN bool) string {
+	TypeName := reflect.ValueOf(*thls).Type().Name()
+	if modifyTN {
+		thls.TN = TypeName
+	}
+	return TypeName
+}
+
+func (thls *SubscribeRsp) TO_JSON(panicWhenError bool) string {
+	if bytes, err := json.Marshal(thls); err != nil {
+		if panicWhenError {
+			panic(err)
+		}
+		return ""
+	} else {
+		return string(bytes)
+	}
+}
+
+//////////////////////////////////////////////////////////////////////

@@ -37,6 +37,14 @@ func inner_check_by_compile() ([]TxInterface, []interface{}) {
 	sliceOrig = append(sliceOrig, ReportReq{})
 	sliceTx = append(sliceTx, new(ReportRsp))
 	sliceOrig = append(sliceOrig, ReportRsp{})
+	sliceTx = append(sliceTx, new(AddUserReq))
+	sliceOrig = append(sliceOrig, AddUserReq{})
+	sliceTx = append(sliceTx, new(AddUserRsp))
+	sliceOrig = append(sliceOrig, AddUserRsp{})
+	sliceTx = append(sliceTx, new(SubscribeReq))
+	sliceOrig = append(sliceOrig, SubscribeReq{})
+	sliceTx = append(sliceTx, new(SubscribeRsp))
+	sliceOrig = append(sliceOrig, SubscribeRsp{})
 	//
 	if len(sliceTx) != len(sliceOrig) {
 		panic("使用指针类型的时候,解析器无法工作,待优化")
@@ -56,8 +64,10 @@ type BaseDataTx struct {
 
 //BaseDataReq 请求结构体的基本数据(每个请求结构体里面都要有它们)
 type BaseDataReq struct {
-	InnerID int64 //([请求]结构体必需)内部ID(用户无关)(API同时支持[同步]&&[异步]时需要的字段)
-	RefID   int64 //([请求]结构体必需)参考ID(用户填值)
+	InnerID int64  //([请求]结构体必需)内部ID(用户无关)(API同时支持[同步]&&[异步]时需要的字段)
+	RefID   int64  //([请求]结构体必需)参考ID(用户填值)
+	OnceUID int64  //([请求]结构体选填)如果未登录,用它执行一次性的校验
+	OncePwd string //([请求]结构体选填)如果未登录,用它执行一次性的校验
 }
 
 //BaseDataRsp 响应结构体的基本数据(每个响应结构体里面都要有它们)
@@ -71,6 +81,19 @@ type UnknownNotice struct {
 	BaseDataTx
 	Message    string //执行情况
 	RawMessage string //原始消息
+}
+
+type AddUserReq struct {
+	BaseDataTx
+	BaseDataReq
+}
+
+type AddUserRsp struct {
+	BaseDataTx
+	BaseDataRsp
+	ReqData     *AddUserReq
+	NewUserID   int64  //新用户的ID
+	NewPassword string //新用户的密码
 }
 
 //LoginReq omit
@@ -89,6 +112,19 @@ type LoginRsp struct {
 	BaseDataTx
 	BaseDataRsp
 	ReqData *LoginReq
+}
+
+type SubscribeReq struct {
+	BaseDataTx
+	BaseDataReq
+	SubUID  int64  //要订阅的用户([正数]时才有效)
+	SubData string //要订阅的类别([非空]时有效)
+}
+
+type SubscribeRsp struct {
+	BaseDataTx
+	BaseDataRsp
+	ReqData *SubscribeReq
 }
 
 //ReportReq omit

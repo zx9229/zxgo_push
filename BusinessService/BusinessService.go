@@ -36,6 +36,7 @@ func New_BusinessService() *BusinessService {
 	//
 	curData.cache = New_TotalUserManager()
 	curData.subBase = New_SubscribeBaseInfo()
+	curData.subBase.AddCategory("cat") //TODO:临时调试代码
 	//
 	return curData
 }
@@ -101,7 +102,7 @@ func (thls *BusinessService) handleReceive(conn *wscmanager.WSConnection, bytes 
 				err = ErrFindNotMethod
 				break
 			}
-			sliceIn := []reflect.Value{reflect.ValueOf(objData)}
+			sliceIn := []reflect.Value{reflect.ValueOf(conn), reflect.ValueOf(objData)}
 			sliceOut := method.Call(sliceIn)
 			if len(sliceOut) != 1 {
 				err = ErrRetValAnomalous
@@ -129,13 +130,14 @@ func (thls *BusinessService) handleReceive(conn *wscmanager.WSConnection, bytes 
 }
 
 const (
-	ErrMsgEmpty             = ""
-	ErrMsgSUCCESS           = "SUCCESS"
-	ErrMsgUserIdNotExist    = "user id not exist"
-	ErrMsgIncorrectPassword = "incorrect password"
-	ErrMsgInvalidLoginType  = "invalid login type"
-	ErrMsgUserHasLoggedIn   = "user has logged in"
-	ErrMsgInvalidCategory   = "invalid category"
+	ErrMsgEmpty                 = ""
+	ErrMsgSUCCESS               = "SUCCESS"
+	ErrMsgUserIdNotExist        = "user id not exist"
+	ErrMsgIncorrectPassword     = "incorrect password"
+	ErrMsgInvalidLoginType      = "invalid login type"
+	ErrMsgUserHasLoggedIn       = "user has logged in"
+	ErrMsgInvalidCategory       = "invalid category"
+	ErrMsgNotLoginAndOncePwdErr = "not login and once password error"
 )
 
 //LoginReq omit
@@ -198,6 +200,64 @@ func (thls *BusinessService) ReportReq(conn *wscmanager.WSConnection, req *txstr
 					stateData.conn.Send(jsonStr)
 				}
 			}
+		}
+	}
+
+	if rsp.BaseDataRsp.Message == ErrMsgEmpty {
+		rsp.BaseDataRsp.Code = 0
+		rsp.BaseDataRsp.Message = ErrMsgSUCCESS
+	} else {
+		rsp.BaseDataRsp.Code = 1
+	}
+
+	return rsp
+}
+
+//AddUserReq omit
+func (thls *BusinessService) AddUserReq(conn *wscmanager.WSConnection, req *txstruct.AddUserReq) *txstruct.AddUserRsp {
+	rsp := new(txstruct.AddUserRsp)
+	rsp.CALC_TN(true)
+	rsp.BaseDataRsp.Code = 0
+	rsp.BaseDataRsp.Message = ErrMsgEmpty
+	rsp.ReqData = req
+
+	InitialPassword := "pwd"
+	if rsp.NewUserID = thls.cache.CreateUser(InitialPassword); 0 < rsp.NewUserID {
+		rsp.BaseDataRsp.Code = 0
+		rsp.BaseDataRsp.Message = ErrMsgSUCCESS
+		rsp.NewPassword = InitialPassword
+	} else {
+		rsp.BaseDataRsp.Code = 1
+		rsp.BaseDataRsp.Message = "FAIL"
+	}
+
+	return rsp
+}
+
+//SubscribeReq omit
+func (thls *BusinessService) SubscribeReq(conn *wscmanager.WSConnection, req *txstruct.SubscribeReq) *txstruct.SubscribeRsp {
+	rsp := new(txstruct.SubscribeRsp)
+	rsp.CALC_TN(true)
+	rsp.BaseDataRsp.Code = 0
+	rsp.BaseDataRsp.Message = ErrMsgEmpty
+	rsp.ReqData = req
+
+	for range "1" {
+		var subInfo *SubscribeUserInfo
+		if conn.ExtraData == nil {
+			if !thls.cache.UserAndPasswordIsOk(req.OnceUID, req.OncePwd) {
+				rsp.BaseDataRsp.Message = ErrMsgNotLoginAndOncePwdErr
+				break
+			}
+			subInfo = thls.cache.allUser[req.OnceUID-1].SubInfo
+		} else {
+			subInfo = conn.ExtraData.(UserTempData).summary.SubInfo
+		}
+		if 0 < req.SubUID {
+			subInfo.SubUser(req.SubUID)
+		}
+		if 0 < len(req.SubData) {
+			subInfo.SubCategory(req.SubData)
 		}
 	}
 
