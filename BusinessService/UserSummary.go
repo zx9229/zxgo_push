@@ -14,12 +14,13 @@ const (
 	LoginTypeEND            //(登录方式)结束值,最大值的下一个
 )
 
+//UserTempData 附加到socket上的用户临时数据
 type UserTempData struct {
-	summary *UserSummary
-	state   *UserStateInfo
+	tInfo *UserTotalInfo
+	sInfo *UserSessionInfo
 }
 
-//UserBaseInfo 用户的基础信息
+//UserBaseInfo 用户的基本信息
 type UserBaseInfo struct {
 	UserID     int64
 	Password   string
@@ -28,31 +29,32 @@ type UserBaseInfo struct {
 	UpdateTime time.Time //更新时刻.
 }
 
-//UserStateInfo 用户的状态信息
-type UserStateInfo struct {
+//UserSessionInfo 用户的会话所持有的信息
+type UserSessionInfo struct {
 	conn       *wscmanager.WSConnection //有值,表示在线.(这个字段不往外导出)
 	LoginType  int                      //电脑登录,网页登录,APP登录,等.
 	MaxPushID  int64                    //推送给它的最大的推送序号
 	LastRecvID int64                    //它上报的自己接收到的最后一个序号
 }
 
-//UserSummary 用户的汇总信息
-type UserSummary struct {
-	Base    UserBaseInfo
-	State   []*UserStateInfo
-	SubInfo *SubscribeUserInfo
+//UserTotalInfo 用户的汇总信息
+type UserTotalInfo struct {
+	Base    UserBaseInfo          //用户基础信息
+	State   []*UserSessionInfo    //用户会话信息
+	SubInfo *UserSubscriptionInfo //用户订阅信息
 }
 
-func New_UserSummary() *UserSummary {
-	curData := new(UserSummary)
+//New_UserTotalInfo omit
+func New_UserTotalInfo() *UserTotalInfo {
+	curData := new(UserTotalInfo)
 	//
-	curData.State = make([]*UserStateInfo, 0)
+	curData.State = make([]*UserSessionInfo, 0)
 	for i := LoginTypeDEFAULT + 1; i < LoginTypeEND; i++ {
-		stateInfo := new(UserStateInfo)
+		stateInfo := new(UserSessionInfo)
 		stateInfo.LoginType = i
 		curData.State = append(curData.State, stateInfo)
 	}
-	curData.SubInfo = New_SubscribeUserInfo()
+	curData.SubInfo = New_UserSubscriptionInfo()
 	//
 	return curData
 }

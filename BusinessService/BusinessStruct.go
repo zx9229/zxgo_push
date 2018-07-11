@@ -17,7 +17,7 @@ type CacheData struct {
 	LastUserID int64             //最后一个注册的用户ID
 	LastPushID int64             //最后一个推送消息的序号
 	SubBase    SubscribeBaseInfo //订阅相关的基本信息
-	AllUser    []*UserSummary
+	AllUser    []*UserTotalInfo
 }
 
 //New_CacheData_Original 创建初始的数据

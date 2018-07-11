@@ -16,7 +16,7 @@ type BusinessService struct {
 	methods    map[string]reflect.Value
 	parser     *txstruct.TxParser
 	manager    *wscmanager.WSConnectionManager
-	cache      *TotalUserManager
+	cache      *UserInfoManager
 	subBase    *SubscribeBaseInfo
 	LastPushID int64 //最后一个推送消息的序号
 }
@@ -34,7 +34,7 @@ func New_BusinessService() *BusinessService {
 	curData.manager.CbDisconnected = curData.handleDisconnected
 	curData.manager.CbReceive = curData.handleReceive
 	//
-	curData.cache = New_TotalUserManager()
+	curData.cache = New_UserInfoManager()
 	curData.subBase = New_SubscribeBaseInfo()
 	curData.subBase.AddCategory("cat") //TODO:临时调试代码
 	//
@@ -68,7 +68,7 @@ func (thls *BusinessService) handleDisconnected(conn *wscmanager.WSConnection, e
 	log.Println(fmt.Sprintf("[Disconnected][%p]err=%v", conn, err))
 	if conn.ExtraData != nil {
 		tmpData := conn.ExtraData.(*UserTempData)
-		tmpData.state.conn = nil
+		tmpData.sInfo.conn = nil
 	}
 }
 
@@ -243,7 +243,7 @@ func (thls *BusinessService) SubscribeReq(conn *wscmanager.WSConnection, req *tx
 	rsp.ReqData = req
 
 	for range "1" {
-		var subInfo *SubscribeUserInfo
+		var subInfo *UserSubscriptionInfo
 		if conn.ExtraData == nil {
 			if !thls.cache.UserAndPasswordIsOk(req.OnceUID, req.OncePwd) {
 				rsp.BaseDataRsp.Message = ErrMsgNotLoginAndOncePwdErr
@@ -251,7 +251,7 @@ func (thls *BusinessService) SubscribeReq(conn *wscmanager.WSConnection, req *tx
 			}
 			subInfo = thls.cache.allUser[req.OnceUID-1].SubInfo
 		} else {
-			subInfo = conn.ExtraData.(UserTempData).summary.SubInfo
+			subInfo = conn.ExtraData.(UserTempData).tInfo.SubInfo
 		}
 		if 0 < req.SubUID {
 			subInfo.SubUser(req.SubUID)

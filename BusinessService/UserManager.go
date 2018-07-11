@@ -8,21 +8,21 @@ import (
 	wscmanager "github.com/zx9229/zxgo_push/WSCManager"
 )
 
-//TotalUserManager 所有用户的管理器
-type TotalUserManager struct {
+//UserInfoManager 用户信息管理器
+type UserInfoManager struct {
 	lastUserID int64 //最后创建的用户的ID
-	allUser    []*UserSummary
+	allUser    []*UserTotalInfo
 }
 
-func New_TotalUserManager() *TotalUserManager {
-	curData := new(TotalUserManager)
+func New_UserInfoManager() *UserInfoManager {
+	curData := new(UserInfoManager)
 	curData.lastUserID = 0
-	curData.allUser = make([]*UserSummary, 0)
+	curData.allUser = make([]*UserTotalInfo, 0)
 	return curData
 }
 
 //IsValidPassword omit
-func (thls *TotalUserManager) IsValidPassword(password string) bool {
+func (thls *UserInfoManager) IsValidPassword(password string) bool {
 	if len(password) == 0 {
 		return false
 	}
@@ -35,7 +35,7 @@ func (thls *TotalUserManager) IsValidPassword(password string) bool {
 }
 
 //CreateUser omit
-func (thls *TotalUserManager) CreateUser(password string) int64 {
+func (thls *UserInfoManager) CreateUser(password string) int64 {
 	if !thls.IsValidPassword(password) {
 		return -1
 	}
@@ -50,7 +50,7 @@ func (thls *TotalUserManager) CreateUser(password string) int64 {
 			return -1
 		}
 	}
-	userData := New_UserSummary()
+	userData := New_UserTotalInfo()
 	userData.Base.UserID = thls.lastUserID + 1
 	userData.Base.Password = password
 	userData.Base.CreateTime = time.Now()
@@ -73,7 +73,7 @@ func (thls *TotalUserManager) CreateUser(password string) int64 {
 }
 
 //DeleteUser omit
-func (thls *TotalUserManager) DeleteUser(userID int64, password string) bool {
+func (thls *UserInfoManager) DeleteUser(userID int64, password string) bool {
 	if !thls.UserAndPasswordIsOk(userID, password) {
 		return false
 	}
@@ -92,7 +92,7 @@ func (thls *TotalUserManager) DeleteUser(userID int64, password string) bool {
 }
 
 //UserAndPasswordIsOk omit
-func (thls *TotalUserManager) UserAndPasswordIsOk(userID int64, password string) bool {
+func (thls *UserInfoManager) UserAndPasswordIsOk(userID int64, password string) bool {
 	if (0 < userID && userID <= int64(len(thls.allUser))) == false {
 		return false
 	}
@@ -118,7 +118,7 @@ var (
 	ErrInvalidCategory   = errors.New("invalid category")
 )
 
-func (thls *TotalUserManager) LoginUser(conn *wscmanager.WSConnection, req *txstruct.LoginReq) error {
+func (thls *UserInfoManager) LoginUser(conn *wscmanager.WSConnection, req *txstruct.LoginReq) error {
 	var err error
 	for range "1" {
 		if !thls.UserAndPasswordIsOk(req.UserID, req.Password) {
@@ -142,7 +142,7 @@ func (thls *TotalUserManager) LoginUser(conn *wscmanager.WSConnection, req *txst
 
 		curLoginInfo.conn = conn
 		//TODO:给连接附加登录信息的结构体指针
-		conn.ExtraData = &UserTempData{summary: thls.allUser[req.UserID-1], state: curLoginInfo}
+		conn.ExtraData = &UserTempData{tInfo: thls.allUser[req.UserID-1], sInfo: curLoginInfo}
 
 		if 0 <= req.LastMsgID {
 			curLoginInfo.LastRecvID = req.LastMsgID
