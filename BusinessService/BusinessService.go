@@ -151,7 +151,7 @@ func (thls *BusinessService) ReportReq(conn *wscmanager.WSConnection, req *txstr
 	for range "1" {
 		if conn.ExtraData == nil {
 			//用户未登录,就校验随附密码
-			if !thls.userMngr.PasswordOk(req.OnceUID, req.OncePwd) {
+			if !thls.userMngr.PasswordOk(req.DU, req.DP) {
 				rsp.BaseDataRsp.Message = ErrMsgNotLoginAndOncePwdErr
 				break
 			}
@@ -211,11 +211,11 @@ func (thls *BusinessService) SubscribeReq(conn *wscmanager.WSConnection, req *tx
 	for range "1" {
 		var subInfo *UserSubscriptionInfo
 		if conn.ExtraData == nil {
-			if !thls.userMngr.PasswordOk(req.OnceUID, req.OncePwd) {
+			if !thls.userMngr.PasswordOk(req.DU, req.DP) {
 				rsp.BaseDataRsp.Message = ErrMsgNotLoginAndOncePwdErr
 				break
 			}
-			subInfo = thls.userMngr.allUser[req.OnceUID-1].SubInfo
+			subInfo = thls.userMngr.allUser[req.DU-1].SubInfo
 		} else {
 			subInfo = conn.ExtraData.(*UserTempData).tInfo.SubInfo
 		}
@@ -247,7 +247,7 @@ func (thls *BusinessService) ActionCategoryReq(conn *wscmanager.WSConnection, re
 
 	for range "1" {
 		if conn.ExtraData == nil {
-			if !thls.userMngr.PasswordOk(req.OnceUID, req.OncePwd) {
+			if !thls.userMngr.PasswordOk(req.DU, req.DP) {
 				rsp.BaseDataRsp.Message = ErrMsgNotLoginAndOncePwdErr
 				break
 			}

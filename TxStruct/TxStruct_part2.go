@@ -23,14 +23,12 @@ func (thls *BaseDataTx) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *BaseDataTx) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -51,14 +49,12 @@ func (thls *UnknownNotice) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *UnknownNotice) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -79,14 +75,12 @@ func (thls *LoginReq) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *LoginReq) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -107,14 +101,12 @@ func (thls *LoginRsp) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *LoginRsp) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -135,14 +127,12 @@ func (thls *ReportReq) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *ReportReq) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -163,14 +153,12 @@ func (thls *ReportRsp) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *ReportRsp) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -191,14 +179,12 @@ func (thls *ReportData) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *ReportData) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -219,14 +205,12 @@ func (thls *AddUserReq) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *AddUserReq) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -247,14 +231,12 @@ func (thls *AddUserRsp) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *AddUserRsp) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -275,14 +257,12 @@ func (thls *SubscribeReq) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *SubscribeReq) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -303,14 +283,12 @@ func (thls *SubscribeRsp) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *SubscribeRsp) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -331,14 +309,12 @@ func (thls *ActionCategoryReq) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *ActionCategoryReq) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -359,12 +335,10 @@ func (thls *ActionCategoryRsp) CalcTN(modifyTN bool) string {
 
 //ToJSON omit
 func (thls *ActionCategoryRsp) ToJSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
+	if bytes, err := json.Marshal(thls); err == nil {
 		return string(bytes)
+	} else if panicWhenError {
+		panic(err)
 	}
+	return ""
 }

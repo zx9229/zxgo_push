@@ -72,8 +72,8 @@ type BaseDataTx struct {
 type BaseDataReq struct {
 	InnerID int64  //([请求]结构体必需)内部ID(用户无关)(API同时支持[同步]&&[异步]时需要的字段)
 	RefID   int64  //([请求]结构体必需)参考ID(用户填值)
-	OnceUID int64  //([请求]结构体选填)如果未登录,用它执行一次性的校验
-	OncePwd string //([请求]结构体选填)如果未登录,用它执行一次性的校验
+	DU      int64  //([请求]结构体选填)如果未登录,用它执行一次性的校验(disposable user)
+	DP      string //([请求]结构体选填)如果未登录,用它执行一次性的校验(disposable pwd)
 }
 
 //BaseDataRsp 响应结构体的基本数据(每个响应结构体里面都要有它们)
@@ -89,11 +89,13 @@ type UnknownNotice struct {
 	RawMessage string //原始消息
 }
 
+//AddUserReq omit
 type AddUserReq struct {
 	BaseDataTx
 	BaseDataReq
 }
 
+//AddUserRsp omit
 type AddUserRsp struct {
 	BaseDataTx
 	BaseDataRsp
