@@ -54,7 +54,7 @@ func new_UserTotalInfo() *UserTotalInfo {
 		stateInfo.LoginType = i
 		curData.State = append(curData.State, stateInfo)
 	}
-	curData.SubInfo = New_UserSubscriptionInfo()
+	curData.SubInfo = new_UserSubscriptionInfo()
 	//
 	return curData
 }

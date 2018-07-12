@@ -10,8 +10,8 @@ type UserSubscriptionInfo struct {
 	AllCategory map[string]bool //接收指定类别的消息.
 }
 
-//New_UserSubscriptionInfo omit
-func New_UserSubscriptionInfo() *UserSubscriptionInfo {
+//new_UserSubscriptionInfo omit
+func new_UserSubscriptionInfo() *UserSubscriptionInfo {
 	curData := new(UserSubscriptionInfo)
 	curData.AllID = make(map[int64]bool)
 	curData.AllCategory = make(map[string]bool)
@@ -30,6 +30,9 @@ func (thls *UserSubscriptionInfo) UnsubUser(userID int64) {
 
 //SubCategory omit
 func (thls *UserSubscriptionInfo) SubCategory(data string) {
+	if data == emptyString {
+		return
+	}
 	dataPrefix := data + string(CategorySep)
 	dictDel := map[string]bool{}
 	for key := range thls.AllCategory {

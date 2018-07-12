@@ -8,15 +8,15 @@ import (
 //TxInterface 通信结构体的接口
 type TxInterface interface {
 	// 获取字段(TN=>TypeName)的值.
-	// 函数体实际上是{ return self.TN }.
+	// 函数体实际上是{ return thls.TN }.
 	GetTN() string
 
 	// 计算类型的名字(calc type name).
-	// if  (modifyTN == true) { TN = TypeName }.
+	// if (modifyTN == true) { thls.TN = TypeName }.
 	CalcTN(modifyTN bool) string
 
 	// 将自身转成json字符串.
-	// 转换失败的话,如果(panicWhenError == true),就panic; 否则返回空字符串.
+	// 转换失败的话,如果(panicWhenError == true),就panic;否则返回空字符串.
 	ToJSON(panicWhenError bool) string
 }
 

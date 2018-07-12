@@ -33,7 +33,7 @@ func New_BusinessService() *BusinessService {
 	curData.connMngr.CbReceive = curData.handleReceive
 	//
 	curData.userMngr = new_UserInfoManager()
-	curData.catgMngr = New_CategoryManager()
+	curData.catgMngr = new_CategoryManager()
 	//
 	return curData
 }
@@ -222,8 +222,10 @@ func (thls *BusinessService) SubscribeReq(conn *wscmanager.WSConnection, req *tx
 		if 0 < req.SubUID {
 			subInfo.SubUser(req.SubUID)
 		}
-		if 0 < len(req.SubData) {
-			subInfo.SubCategory(req.SubData)
+		if req.SubData != emptyString {
+			if thls.catgMngr.IsRegistered(req.SubData) {
+				subInfo.SubCategory(req.SubData)
+			}
 		}
 	}
 

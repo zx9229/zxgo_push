@@ -12,8 +12,8 @@ type CategoryManager struct {
 	AllCategory map[string]bool
 }
 
-//New_CategoryManager omit
-func New_CategoryManager() *CategoryManager {
+//new_CategoryManager omit
+func new_CategoryManager() *CategoryManager {
 	curData := new(CategoryManager)
 	curData.AllCategory = make(map[string]bool)
 	return curData
