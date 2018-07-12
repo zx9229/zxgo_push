@@ -53,7 +53,7 @@ func (thls *TxParser) ParseByteSlice(jsonByte []byte) (objData TxInterface, objT
 	}
 
 	var ok bool
-	if objType, ok = thls.mapStr2Type[baseData.GET_TN()]; !ok {
+	if objType, ok = thls.mapStr2Type[baseData.GetTN()]; !ok {
 		err = ErrFindNotTypeByName
 		return
 	}

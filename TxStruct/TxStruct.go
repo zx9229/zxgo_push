@@ -9,15 +9,15 @@ import (
 type TxInterface interface {
 	// 获取字段(TN=>TypeName)的值.
 	// 函数体实际上是{ return self.TN }.
-	GET_TN() string
+	GetTN() string
 
 	// 计算类型的名字(calc type name).
 	// if  (modifyTN == true) { TN = TypeName }.
-	CALC_TN(modifyTN bool) string
+	CalcTN(modifyTN bool) string
 
 	// 将自身转成json字符串.
 	// 转换失败的话,如果(panicWhenError == true),就panic; 否则返回空字符串.
-	TO_JSON(panicWhenError bool) string
+	ToJSON(panicWhenError bool) string
 }
 
 //inner_check_by_compile 在编译时,检查各个结构体是否进行正常书写.
@@ -37,6 +37,8 @@ func inner_check_by_compile() ([]TxInterface, []interface{}) {
 	sliceOrig = append(sliceOrig, ReportReq{})
 	sliceTx = append(sliceTx, new(ReportRsp))
 	sliceOrig = append(sliceOrig, ReportRsp{})
+	sliceTx = append(sliceTx, new(ReportData))
+	sliceOrig = append(sliceOrig, ReportData{})
 	sliceTx = append(sliceTx, new(AddUserReq))
 	sliceOrig = append(sliceOrig, AddUserReq{})
 	sliceTx = append(sliceTx, new(AddUserRsp))
@@ -45,12 +47,16 @@ func inner_check_by_compile() ([]TxInterface, []interface{}) {
 	sliceOrig = append(sliceOrig, SubscribeReq{})
 	sliceTx = append(sliceTx, new(SubscribeRsp))
 	sliceOrig = append(sliceOrig, SubscribeRsp{})
+	sliceTx = append(sliceTx, new(ActionCategoryReq))
+	sliceOrig = append(sliceOrig, ActionCategoryReq{})
+	sliceTx = append(sliceTx, new(ActionCategoryRsp))
+	sliceOrig = append(sliceOrig, ActionCategoryRsp{})
 	//
 	if len(sliceTx) != len(sliceOrig) {
 		panic("使用指针类型的时候,解析器无法工作,待优化")
 	}
 	for i := 0; i < len(sliceTx); i++ {
-		if sliceTx[i].CALC_TN(false) != reflect.TypeOf(sliceOrig[i]).Name() {
+		if sliceTx[i].CalcTN(false) != reflect.TypeOf(sliceOrig[i]).Name() {
 			panic("使用指针类型的时候,解析器无法工作,待优化")
 		}
 	}
@@ -114,6 +120,23 @@ type LoginRsp struct {
 	ReqData *LoginReq
 }
 
+//ActionCategoryReq 增删查类别
+type ActionCategoryReq struct {
+	BaseDataTx
+	BaseDataReq
+	Action   int //-1:删除,0:查询,1:增加
+	Category string
+}
+
+//ActionCategoryRsp omit
+type ActionCategoryRsp struct {
+	BaseDataTx
+	BaseDataRsp
+	ReqData   *ActionCategoryReq
+	QryResult []string //查询结果
+}
+
+//SubscribeReq omit
 type SubscribeReq struct {
 	BaseDataTx
 	BaseDataReq
@@ -121,6 +144,7 @@ type SubscribeReq struct {
 	SubData string //要订阅的类别([非空]时有效)
 }
 
+//SubscribeRsp omit
 type SubscribeRsp struct {
 	BaseDataTx
 	BaseDataRsp
@@ -144,4 +168,18 @@ type ReportRsp struct {
 	BaseDataTx
 	BaseDataRsp
 	ReqData *ReportReq
+}
+
+//ReportData omit
+type ReportData struct {
+	BaseDataTx
+	ID   int64     `xorm:"notnull pk"` //数据库的递增序号.
+	Time time.Time //插入数据库的时刻.
+	//
+	UserID      int64
+	UserTagID   int64     //用户在维护这一条数据时,可能会给它贴上一个序号,这个序号的值
+	UserTagTime time.Time //用户在维护这一条数据时,可能会给它贴上一个时刻,这个时刻的值
+	AttachedI   int64     //随附的一个数字(或许你上报的消息,想表示(成功/失败)或(某某的个数)呢.)
+	Message     string    //消息的详情(当然,这里面也可以是json,这样就不需要上面的字段了)
+	Category    string    //消息所属的类别
 }

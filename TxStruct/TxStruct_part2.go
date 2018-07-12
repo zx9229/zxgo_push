@@ -7,11 +7,13 @@ import (
 
 //////////////////////////////////////////////////////////////////////
 
-func (thls *BaseDataTx) GET_TN() string {
+//GetTN omit
+func (thls *BaseDataTx) GetTN() string {
 	return thls.TN
 }
 
-func (thls *BaseDataTx) CALC_TN(modifyTN bool) string {
+//CalcTN omit
+func (thls *BaseDataTx) CalcTN(modifyTN bool) string {
 	TypeName := reflect.ValueOf(*thls).Type().Name()
 	if modifyTN {
 		thls.TN = TypeName
@@ -19,7 +21,8 @@ func (thls *BaseDataTx) CALC_TN(modifyTN bool) string {
 	return TypeName
 }
 
-func (thls *BaseDataTx) TO_JSON(panicWhenError bool) string {
+//ToJSON omit
+func (thls *BaseDataTx) ToJSON(panicWhenError bool) string {
 	if bytes, err := json.Marshal(thls); err != nil {
 		if panicWhenError {
 			panic(err)
@@ -32,11 +35,13 @@ func (thls *BaseDataTx) TO_JSON(panicWhenError bool) string {
 
 //////////////////////////////////////////////////////////////////////
 
-func (thls *UnknownNotice) GET_TN() string {
+//GetTN omit
+func (thls *UnknownNotice) GetTN() string {
 	return thls.TN
 }
 
-func (thls *UnknownNotice) CALC_TN(modifyTN bool) string {
+//CalcTN omit
+func (thls *UnknownNotice) CalcTN(modifyTN bool) string {
 	TypeName := reflect.ValueOf(*thls).Type().Name()
 	if modifyTN {
 		thls.TN = TypeName
@@ -44,7 +49,8 @@ func (thls *UnknownNotice) CALC_TN(modifyTN bool) string {
 	return TypeName
 }
 
-func (thls *UnknownNotice) TO_JSON(panicWhenError bool) string {
+//ToJSON omit
+func (thls *UnknownNotice) ToJSON(panicWhenError bool) string {
 	if bytes, err := json.Marshal(thls); err != nil {
 		if panicWhenError {
 			panic(err)
@@ -57,11 +63,13 @@ func (thls *UnknownNotice) TO_JSON(panicWhenError bool) string {
 
 //////////////////////////////////////////////////////////////////////
 
-func (thls *LoginReq) GET_TN() string {
+//GetTN omit
+func (thls *LoginReq) GetTN() string {
 	return thls.TN
 }
 
-func (thls *LoginReq) CALC_TN(modifyTN bool) string {
+//CalcTN omit
+func (thls *LoginReq) CalcTN(modifyTN bool) string {
 	TypeName := reflect.ValueOf(*thls).Type().Name()
 	if modifyTN {
 		thls.TN = TypeName
@@ -69,7 +77,8 @@ func (thls *LoginReq) CALC_TN(modifyTN bool) string {
 	return TypeName
 }
 
-func (thls *LoginReq) TO_JSON(panicWhenError bool) string {
+//ToJSON omit
+func (thls *LoginReq) ToJSON(panicWhenError bool) string {
 	if bytes, err := json.Marshal(thls); err != nil {
 		if panicWhenError {
 			panic(err)
@@ -82,11 +91,13 @@ func (thls *LoginReq) TO_JSON(panicWhenError bool) string {
 
 //////////////////////////////////////////////////////////////////////
 
-func (thls *LoginRsp) GET_TN() string {
+//GetTN omit
+func (thls *LoginRsp) GetTN() string {
 	return thls.TN
 }
 
-func (thls *LoginRsp) CALC_TN(modifyTN bool) string {
+//CalcTN omit
+func (thls *LoginRsp) CalcTN(modifyTN bool) string {
 	TypeName := reflect.ValueOf(*thls).Type().Name()
 	if modifyTN {
 		thls.TN = TypeName
@@ -94,31 +105,8 @@ func (thls *LoginRsp) CALC_TN(modifyTN bool) string {
 	return TypeName
 }
 
-func (thls *LoginRsp) TO_JSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
-		return string(bytes)
-	}
-}
-
-//////////////////////////////////////////////////////////////////////
-func (thls *ReportReq) GET_TN() string {
-	return thls.TN
-}
-
-func (thls *ReportReq) CALC_TN(modifyTN bool) string {
-	TypeName := reflect.ValueOf(*thls).Type().Name()
-	if modifyTN {
-		thls.TN = TypeName
-	}
-	return TypeName
-}
-
-func (thls *ReportReq) TO_JSON(panicWhenError bool) string {
+//ToJSON omit
+func (thls *LoginRsp) ToJSON(panicWhenError bool) string {
 	if bytes, err := json.Marshal(thls); err != nil {
 		if panicWhenError {
 			panic(err)
@@ -131,11 +119,13 @@ func (thls *ReportReq) TO_JSON(panicWhenError bool) string {
 
 //////////////////////////////////////////////////////////////////////
 
-func (thls *ReportRsp) GET_TN() string {
+//GetTN omit
+func (thls *ReportReq) GetTN() string {
 	return thls.TN
 }
 
-func (thls *ReportRsp) CALC_TN(modifyTN bool) string {
+//CalcTN omit
+func (thls *ReportReq) CalcTN(modifyTN bool) string {
 	TypeName := reflect.ValueOf(*thls).Type().Name()
 	if modifyTN {
 		thls.TN = TypeName
@@ -143,31 +133,8 @@ func (thls *ReportRsp) CALC_TN(modifyTN bool) string {
 	return TypeName
 }
 
-func (thls *ReportRsp) TO_JSON(panicWhenError bool) string {
-	if bytes, err := json.Marshal(thls); err != nil {
-		if panicWhenError {
-			panic(err)
-		}
-		return ""
-	} else {
-		return string(bytes)
-	}
-}
-
-//////////////////////////////////////////////////////////////////////
-func (thls *AddUserReq) GET_TN() string {
-	return thls.TN
-}
-
-func (thls *AddUserReq) CALC_TN(modifyTN bool) string {
-	TypeName := reflect.ValueOf(*thls).Type().Name()
-	if modifyTN {
-		thls.TN = TypeName
-	}
-	return TypeName
-}
-
-func (thls *AddUserReq) TO_JSON(panicWhenError bool) string {
+//ToJSON omit
+func (thls *ReportReq) ToJSON(panicWhenError bool) string {
 	if bytes, err := json.Marshal(thls); err != nil {
 		if panicWhenError {
 			panic(err)
@@ -180,11 +147,13 @@ func (thls *AddUserReq) TO_JSON(panicWhenError bool) string {
 
 //////////////////////////////////////////////////////////////////////
 
-func (thls *AddUserRsp) GET_TN() string {
+//GetTN omit
+func (thls *ReportRsp) GetTN() string {
 	return thls.TN
 }
 
-func (thls *AddUserRsp) CALC_TN(modifyTN bool) string {
+//CalcTN omit
+func (thls *ReportRsp) CalcTN(modifyTN bool) string {
 	TypeName := reflect.ValueOf(*thls).Type().Name()
 	if modifyTN {
 		thls.TN = TypeName
@@ -192,7 +161,8 @@ func (thls *AddUserRsp) CALC_TN(modifyTN bool) string {
 	return TypeName
 }
 
-func (thls *AddUserRsp) TO_JSON(panicWhenError bool) string {
+//ToJSON omit
+func (thls *ReportRsp) ToJSON(panicWhenError bool) string {
 	if bytes, err := json.Marshal(thls); err != nil {
 		if panicWhenError {
 			panic(err)
@@ -205,11 +175,13 @@ func (thls *AddUserRsp) TO_JSON(panicWhenError bool) string {
 
 //////////////////////////////////////////////////////////////////////
 
-func (thls *SubscribeReq) GET_TN() string {
+//GetTN omit
+func (thls *ReportData) GetTN() string {
 	return thls.TN
 }
 
-func (thls *SubscribeReq) CALC_TN(modifyTN bool) string {
+//CalcTN omit
+func (thls *ReportData) CalcTN(modifyTN bool) string {
 	TypeName := reflect.ValueOf(*thls).Type().Name()
 	if modifyTN {
 		thls.TN = TypeName
@@ -217,7 +189,8 @@ func (thls *SubscribeReq) CALC_TN(modifyTN bool) string {
 	return TypeName
 }
 
-func (thls *SubscribeReq) TO_JSON(panicWhenError bool) string {
+//ToJSON omit
+func (thls *ReportData) ToJSON(panicWhenError bool) string {
 	if bytes, err := json.Marshal(thls); err != nil {
 		if panicWhenError {
 			panic(err)
@@ -230,11 +203,13 @@ func (thls *SubscribeReq) TO_JSON(panicWhenError bool) string {
 
 //////////////////////////////////////////////////////////////////////
 
-func (thls *SubscribeRsp) GET_TN() string {
+//GetTN omit
+func (thls *AddUserReq) GetTN() string {
 	return thls.TN
 }
 
-func (thls *SubscribeRsp) CALC_TN(modifyTN bool) string {
+//CalcTN omit
+func (thls *AddUserReq) CalcTN(modifyTN bool) string {
 	TypeName := reflect.ValueOf(*thls).Type().Name()
 	if modifyTN {
 		thls.TN = TypeName
@@ -242,7 +217,8 @@ func (thls *SubscribeRsp) CALC_TN(modifyTN bool) string {
 	return TypeName
 }
 
-func (thls *SubscribeRsp) TO_JSON(panicWhenError bool) string {
+//ToJSON omit
+func (thls *AddUserReq) ToJSON(panicWhenError bool) string {
 	if bytes, err := json.Marshal(thls); err != nil {
 		if panicWhenError {
 			panic(err)
@@ -254,3 +230,141 @@ func (thls *SubscribeRsp) TO_JSON(panicWhenError bool) string {
 }
 
 //////////////////////////////////////////////////////////////////////
+
+//GetTN omit
+func (thls *AddUserRsp) GetTN() string {
+	return thls.TN
+}
+
+//CalcTN omit
+func (thls *AddUserRsp) CalcTN(modifyTN bool) string {
+	TypeName := reflect.ValueOf(*thls).Type().Name()
+	if modifyTN {
+		thls.TN = TypeName
+	}
+	return TypeName
+}
+
+//ToJSON omit
+func (thls *AddUserRsp) ToJSON(panicWhenError bool) string {
+	if bytes, err := json.Marshal(thls); err != nil {
+		if panicWhenError {
+			panic(err)
+		}
+		return ""
+	} else {
+		return string(bytes)
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+
+//GetTN omit
+func (thls *SubscribeReq) GetTN() string {
+	return thls.TN
+}
+
+//CalcTN omit
+func (thls *SubscribeReq) CalcTN(modifyTN bool) string {
+	TypeName := reflect.ValueOf(*thls).Type().Name()
+	if modifyTN {
+		thls.TN = TypeName
+	}
+	return TypeName
+}
+
+//ToJSON omit
+func (thls *SubscribeReq) ToJSON(panicWhenError bool) string {
+	if bytes, err := json.Marshal(thls); err != nil {
+		if panicWhenError {
+			panic(err)
+		}
+		return ""
+	} else {
+		return string(bytes)
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+
+//GetTN omit
+func (thls *SubscribeRsp) GetTN() string {
+	return thls.TN
+}
+
+//CalcTN omit
+func (thls *SubscribeRsp) CalcTN(modifyTN bool) string {
+	TypeName := reflect.ValueOf(*thls).Type().Name()
+	if modifyTN {
+		thls.TN = TypeName
+	}
+	return TypeName
+}
+
+//ToJSON omit
+func (thls *SubscribeRsp) ToJSON(panicWhenError bool) string {
+	if bytes, err := json.Marshal(thls); err != nil {
+		if panicWhenError {
+			panic(err)
+		}
+		return ""
+	} else {
+		return string(bytes)
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+
+//GetTN omit
+func (thls *ActionCategoryReq) GetTN() string {
+	return thls.TN
+}
+
+//CalcTN omit
+func (thls *ActionCategoryReq) CalcTN(modifyTN bool) string {
+	TypeName := reflect.ValueOf(*thls).Type().Name()
+	if modifyTN {
+		thls.TN = TypeName
+	}
+	return TypeName
+}
+
+//ToJSON omit
+func (thls *ActionCategoryReq) ToJSON(panicWhenError bool) string {
+	if bytes, err := json.Marshal(thls); err != nil {
+		if panicWhenError {
+			panic(err)
+		}
+		return ""
+	} else {
+		return string(bytes)
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+
+//GetTN omit
+func (thls *ActionCategoryRsp) GetTN() string {
+	return thls.TN
+}
+
+//CalcTN omit
+func (thls *ActionCategoryRsp) CalcTN(modifyTN bool) string {
+	TypeName := reflect.ValueOf(*thls).Type().Name()
+	if modifyTN {
+		thls.TN = TypeName
+	}
+	return TypeName
+}
+
+//ToJSON omit
+func (thls *ActionCategoryRsp) ToJSON(panicWhenError bool) string {
+	if bytes, err := json.Marshal(thls); err != nil {
+		if panicWhenError {
+			panic(err)
+		}
+		return ""
+	} else {
+		return string(bytes)
+	}
+}

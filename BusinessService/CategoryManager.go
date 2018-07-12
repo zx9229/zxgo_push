@@ -72,6 +72,21 @@ func (thls *CategoryManager) DelCategory(data string) {
 	}
 }
 
+//QryCategory omit
+func (thls *CategoryManager) QryCategory(data string) []string {
+	sliceData := make([]string, 0)
+	dataPrefix := data + string(CategorySep)
+	for key := range thls.AllCategory {
+		if key == data {
+			sliceData = append(sliceData, key)
+		}
+		if strings.HasPrefix(key, dataPrefix) {
+			sliceData = append(sliceData, key)
+		}
+	}
+	return sliceData
+}
+
 //IsRegistered 送进去的是不是一个注册过的类别
 func (thls *CategoryManager) IsRegistered(data string) bool {
 	dataPrefix := data + string(CategorySep)

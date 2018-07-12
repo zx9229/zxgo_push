@@ -44,8 +44,8 @@ type UserTotalInfo struct {
 	SubInfo *UserSubscriptionInfo //用户订阅信息
 }
 
-//New_UserTotalInfo omit
-func New_UserTotalInfo() *UserTotalInfo {
+//new_UserTotalInfo omit
+func new_UserTotalInfo() *UserTotalInfo {
 	curData := new(UserTotalInfo)
 	//
 	curData.State = make([]*UserSessionInfo, 0)

@@ -1,8 +1,6 @@
 package businessservice
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -34,9 +32,8 @@ func New_BusinessService() *BusinessService {
 	curData.connMngr.CbDisconnected = curData.handleDisconnected
 	curData.connMngr.CbReceive = curData.handleReceive
 	//
-	curData.userMngr = New_UserInfoManager()
+	curData.userMngr = new_UserInfoManager()
 	curData.catgMngr = New_CategoryManager()
-	curData.catgMngr.AddCategory("cat") //TODO:临时调试代码
 	//
 	return curData
 }
@@ -46,16 +43,17 @@ func (thls *BusinessService) GetConnectionManager() *wscmanager.WSConnectionMana
 	return thls.connMngr
 }
 
+//calcMethods omit
 func (thls *BusinessService) calcMethods() map[string]reflect.Value {
-	calcMethods := make(map[string]reflect.Value)
+	methodsMap := make(map[string]reflect.Value)
 	vf := reflect.ValueOf(thls)
 	vft := vf.Type()
 	mNum := vf.NumMethod()
 	for i := 0; i < mNum; i++ {
 		mName := vft.Method(i).Name
-		calcMethods[mName] = vf.Method(i)
+		methodsMap[mName] = vf.Method(i)
 	}
-	return calcMethods
+	return methodsMap
 }
 
 //HandleConnected omit
@@ -72,13 +70,6 @@ func (thls *BusinessService) handleDisconnected(conn *wscmanager.WSConnection, e
 	}
 }
 
-var (
-	ErrParseDataFail       = errors.New("can not parse data")
-	ErrFindNotMethod       = errors.New("can not find corresponding method")
-	ErrRetValAnomalous     = errors.New("call method and return value anomalous")
-	ErrConvertTxStructFail = errors.New("return value convert to tx struct fail")
-)
-
 //HandleReceive omit
 func (thls *BusinessService) handleReceive(conn *wscmanager.WSConnection, bytes []byte) {
 	var err error
@@ -89,8 +80,8 @@ func (thls *BusinessService) handleReceive(conn *wscmanager.WSConnection, bytes 
 
 		if objData, _, err = thls.parser.ParseByteSlice(bytes); err != nil {
 			notice := txstruct.UnknownNotice{Message: ErrParseDataFail.Error(), RawMessage: string(bytes)}
-			notice.CALC_TN(true)
-			responseMessage = notice.TO_JSON(true)
+			notice.CalcTN(true)
+			responseMessage = notice.ToJSON(true)
 			break
 		}
 
@@ -98,7 +89,7 @@ func (thls *BusinessService) handleReceive(conn *wscmanager.WSConnection, bytes 
 		for range "1" {
 			var ok bool
 			var method reflect.Value
-			if method, ok = thls.methods[objData.GET_TN()]; !ok {
+			if method, ok = thls.methods[objData.GetTN()]; !ok {
 				err = ErrFindNotMethod
 				break
 			}
@@ -115,12 +106,12 @@ func (thls *BusinessService) handleReceive(conn *wscmanager.WSConnection, bytes 
 		}
 		if rspData == nil {
 			notice := txstruct.UnknownNotice{Message: err.Error(), RawMessage: string(bytes)}
-			notice.CALC_TN(true)
-			responseMessage = notice.TO_JSON(true)
+			notice.CalcTN(true)
+			responseMessage = notice.ToJSON(true)
 			break
 		}
 
-		responseMessage = rspData.TO_JSON(true)
+		responseMessage = rspData.ToJSON(true)
 	}
 
 	if err = conn.Send(responseMessage); err != nil {
@@ -129,28 +120,15 @@ func (thls *BusinessService) handleReceive(conn *wscmanager.WSConnection, bytes 
 	}
 }
 
-const (
-	ErrMsgEmpty                 = ""
-	ErrMsgSUCCESS               = "SUCCESS"
-	ErrMsgUserIdNotExist        = "user id not exist"
-	ErrMsgIncorrectPassword     = "incorrect password"
-	ErrMsgInvalidLoginType      = "invalid login type"
-	ErrMsgUserHasLoggedIn       = "user has logged in"
-	ErrMsgInvalidCategory       = "invalid category"
-	ErrMsgNotLoginAndOncePwdErr = "not login and once password error"
-)
-
 //LoginReq omit
 func (thls *BusinessService) LoginReq(conn *wscmanager.WSConnection, req *txstruct.LoginReq) *txstruct.LoginRsp {
 	rsp := new(txstruct.LoginRsp)
-	rsp.CALC_TN(true)
+	rsp.CalcTN(true)
 	rsp.BaseDataRsp.Code = 0
 	rsp.BaseDataRsp.Message = ErrMsgEmpty
 	rsp.ReqData = req
 
-	if err := thls.userMngr.LoginUser(conn, req); err != nil {
-		rsp.BaseDataRsp.Message = err.Error()
-	}
+	rsp.BaseDataRsp.Message = thls.userMngr.LoginUser(conn, req)
 
 	if rsp.Message == ErrMsgEmpty {
 		rsp.BaseDataRsp.Code = 0
@@ -165,13 +143,20 @@ func (thls *BusinessService) LoginReq(conn *wscmanager.WSConnection, req *txstru
 //ReportReq omit
 func (thls *BusinessService) ReportReq(conn *wscmanager.WSConnection, req *txstruct.ReportReq) *txstruct.ReportRsp {
 	rsp := new(txstruct.ReportRsp)
-	rsp.CALC_TN(true)
+	rsp.CalcTN(true)
 	rsp.BaseDataRsp.Code = 0
-	rsp.BaseDataRsp.Message = ErrMsgEmpty
+	rsp.BaseDataRsp.Message = emptyString
 	rsp.ReqData = req
 
 	for range "1" {
-		//TODO:用户未登录,就校验随附密码,失败就拒绝
+		if conn.ExtraData == nil {
+			//用户未登录,就校验随附密码
+			if !thls.userMngr.PasswordOk(req.OnceUID, req.OncePwd) {
+				rsp.BaseDataRsp.Message = ErrMsgNotLoginAndOncePwdErr
+				break
+			}
+		}
+
 		if !thls.catgMngr.IsRegistered(req.Category) {
 			rsp.BaseDataRsp.Message = ErrMsgInvalidCategory
 			break
@@ -181,29 +166,10 @@ func (thls *BusinessService) ReportReq(conn *wscmanager.WSConnection, req *txstr
 		reportData.ID = thls.LastPushID + 1
 		thls.LastPushID = reportData.ID
 
-		//TODO:待优化,抽离成订阅管理器
-		if true {
-			jsonByte, _ := json.Marshal(reportData)
-			jsonStr := string(jsonByte)
-
-			for _, userData := range thls.userMngr.allUser {
-				if userData == nil {
-					continue
-				}
-				if !userData.SubInfo.ShouldSend(reportData.UserID, reportData.Category) {
-					continue
-				}
-				for _, stateData := range userData.State {
-					if stateData.conn == nil {
-						continue
-					}
-					stateData.conn.Send(jsonStr)
-				}
-			}
-		}
+		thls.userMngr.PushData(reportData)
 	}
 
-	if rsp.BaseDataRsp.Message == ErrMsgEmpty {
+	if rsp.BaseDataRsp.Message == emptyString {
 		rsp.BaseDataRsp.Code = 0
 		rsp.BaseDataRsp.Message = ErrMsgSUCCESS
 	} else {
@@ -216,7 +182,7 @@ func (thls *BusinessService) ReportReq(conn *wscmanager.WSConnection, req *txstr
 //AddUserReq omit
 func (thls *BusinessService) AddUserReq(conn *wscmanager.WSConnection, req *txstruct.AddUserReq) *txstruct.AddUserRsp {
 	rsp := new(txstruct.AddUserRsp)
-	rsp.CALC_TN(true)
+	rsp.CalcTN(true)
 	rsp.BaseDataRsp.Code = 0
 	rsp.BaseDataRsp.Message = ErrMsgEmpty
 	rsp.ReqData = req
@@ -237,7 +203,7 @@ func (thls *BusinessService) AddUserReq(conn *wscmanager.WSConnection, req *txst
 //SubscribeReq omit
 func (thls *BusinessService) SubscribeReq(conn *wscmanager.WSConnection, req *txstruct.SubscribeReq) *txstruct.SubscribeRsp {
 	rsp := new(txstruct.SubscribeRsp)
-	rsp.CALC_TN(true)
+	rsp.CalcTN(true)
 	rsp.BaseDataRsp.Code = 0
 	rsp.BaseDataRsp.Message = ErrMsgEmpty
 	rsp.ReqData = req
@@ -245,13 +211,13 @@ func (thls *BusinessService) SubscribeReq(conn *wscmanager.WSConnection, req *tx
 	for range "1" {
 		var subInfo *UserSubscriptionInfo
 		if conn.ExtraData == nil {
-			if !thls.userMngr.UserAndPasswordIsOk(req.OnceUID, req.OncePwd) {
+			if !thls.userMngr.PasswordOk(req.OnceUID, req.OncePwd) {
 				rsp.BaseDataRsp.Message = ErrMsgNotLoginAndOncePwdErr
 				break
 			}
 			subInfo = thls.userMngr.allUser[req.OnceUID-1].SubInfo
 		} else {
-			subInfo = conn.ExtraData.(UserTempData).tInfo.SubInfo
+			subInfo = conn.ExtraData.(*UserTempData).tInfo.SubInfo
 		}
 		if 0 < req.SubUID {
 			subInfo.SubUser(req.SubUID)
@@ -268,5 +234,38 @@ func (thls *BusinessService) SubscribeReq(conn *wscmanager.WSConnection, req *tx
 		rsp.BaseDataRsp.Code = 1
 	}
 
+	return rsp
+}
+
+//ActionCategoryReq omit
+func (thls *BusinessService) ActionCategoryReq(conn *wscmanager.WSConnection, req *txstruct.ActionCategoryReq) *txstruct.ActionCategoryRsp {
+	rsp := new(txstruct.ActionCategoryRsp)
+	rsp.CalcTN(true)
+	rsp.BaseDataRsp.Code = 0
+	rsp.BaseDataRsp.Message = emptyString
+	rsp.ReqData = req
+
+	for range "1" {
+		if conn.ExtraData == nil {
+			if !thls.userMngr.PasswordOk(req.OnceUID, req.OncePwd) {
+				rsp.BaseDataRsp.Message = ErrMsgNotLoginAndOncePwdErr
+				break
+			}
+		}
+		if 0 < req.Action {
+			thls.catgMngr.AddCategory(req.Category)
+		} else if 0 < req.Action {
+			thls.catgMngr.DelCategory(req.Category)
+		} else {
+			rsp.QryResult = thls.catgMngr.QryCategory(req.Category)
+		}
+	}
+
+	if rsp.BaseDataRsp.Message == emptyString {
+		rsp.BaseDataRsp.Code = 0
+		rsp.BaseDataRsp.Message = ErrMsgSUCCESS
+	} else {
+		rsp.BaseDataRsp.Code = 1
+	}
 	return rsp
 }

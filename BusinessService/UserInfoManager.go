@@ -1,7 +1,6 @@
 package businessservice
 
 import (
-	"errors"
 	"time"
 
 	txstruct "github.com/zx9229/zxgo_push/TxStruct"
@@ -14,16 +13,17 @@ type UserInfoManager struct {
 	allUser    []*UserTotalInfo
 }
 
-func New_UserInfoManager() *UserInfoManager {
+//new_UserInfoManager omit
+func new_UserInfoManager() *UserInfoManager {
 	curData := new(UserInfoManager)
 	curData.lastUserID = 0
 	curData.allUser = make([]*UserTotalInfo, 0)
 	return curData
 }
 
-//IsValidPassword omit
-func (thls *UserInfoManager) IsValidPassword(password string) bool {
-	if len(password) == 0 {
+//WellFormedPassword 格式正确的密码
+func (thls *UserInfoManager) WellFormedPassword(password string) bool {
+	if password == emptyString {
 		return false
 	}
 	for _, b := range password {
@@ -34,55 +34,80 @@ func (thls *UserInfoManager) IsValidPassword(password string) bool {
 	return true
 }
 
+//PasswordOk omit
+func (thls *UserInfoManager) PasswordOk(userID int64, password string) bool {
+	if (0 < userID && userID <= int64(len(thls.allUser))) == false {
+		return false
+	}
+	userInfo := thls.allUser[userID-1]
+	if userInfo == nil {
+		return false
+	}
+	if userInfo.Base.UserID != userID { //违反了逻辑规则.
+		return false
+	}
+	if userInfo.Base.Password != password {
+		return false
+	}
+	return true
+}
+
+//GetUserTotalInfo omit
+func (thls *UserInfoManager) GetUserTotalInfo(userID int64) *UserTotalInfo {
+	return thls.allUser[userID-1]
+}
+
 //CreateUser omit
 func (thls *UserInfoManager) CreateUser(password string) int64 {
-	if !thls.IsValidPassword(password) {
-		return -1
+	var userID int64
+	if !thls.WellFormedPassword(password) {
+		return userID
 	}
 	if int64(len(thls.allUser)) != thls.lastUserID { //违反了逻辑规则.
-		return -1
+		return userID
 	}
-	for idx, us := range thls.allUser {
-		if us == nil {
+	for idx, uInfo := range thls.allUser {
+		if uInfo == nil {
 			continue
 		}
-		if int64(idx) != us.Base.UserID { //违反了逻辑规则.
-			return -1
+		if int64(idx+1) != uInfo.Base.UserID { //违反了逻辑规则.
+			return userID
 		}
 	}
-	userData := New_UserTotalInfo()
-	userData.Base.UserID = thls.lastUserID + 1
-	userData.Base.Password = password
-	userData.Base.CreateTime = time.Now()
-	userData.Base.UpdateTime = userData.Base.CreateTime
-	userData.Base.Memo = ""
 
-	thls.lastUserID = userData.Base.UserID
-	thls.allUser = append(thls.allUser, userData)
+	newUserInfo := new_UserTotalInfo()
+	newUserInfo.Base.UserID = thls.lastUserID + 1
+	newUserInfo.Base.Password = password
+	newUserInfo.Base.CreateTime = time.Now()
+	newUserInfo.Base.UpdateTime = newUserInfo.Base.CreateTime
+	newUserInfo.Base.Memo = ""
 
-	for idx, us := range thls.allUser {
-		if us == nil {
+	thls.lastUserID = newUserInfo.Base.UserID
+	thls.allUser = append(thls.allUser, newUserInfo)
+
+	for idx, uInfo := range thls.allUser {
+		if uInfo == nil {
 			continue
 		}
-		if int64(idx+1) != us.Base.UserID {
+		if int64(idx+1) != uInfo.Base.UserID {
 			panic("违反了逻辑规则")
 		}
 	}
 
-	return userData.Base.UserID
+	return newUserInfo.Base.UserID
 }
 
 //DeleteUser omit
 func (thls *UserInfoManager) DeleteUser(userID int64, password string) bool {
-	if !thls.UserAndPasswordIsOk(userID, password) {
+	if !thls.PasswordOk(userID, password) {
 		return false
 	}
-	for _, state := range thls.allUser[userID-1].State {
-		if state.conn == nil {
+	for _, sInfo := range thls.allUser[userID-1].State {
+		if sInfo.conn == nil {
 			continue
 		}
 		//TODO:关闭之前,发送注销的消息.
-		state.conn.Close()
+		sInfo.conn.Close()
 	}
 
 	thls.allUser[userID-1] = nil
@@ -91,63 +116,58 @@ func (thls *UserInfoManager) DeleteUser(userID int64, password string) bool {
 	return true
 }
 
-//UserAndPasswordIsOk omit
-func (thls *UserInfoManager) UserAndPasswordIsOk(userID int64, password string) bool {
-	if (0 < userID && userID <= int64(len(thls.allUser))) == false {
-		return false
-	}
-	userData := thls.allUser[userID-1]
-	if userData == nil {
-		return false
-	}
-	if userData.Base.UserID != userID { //违反了逻辑规则.
-		return false
-	}
-	if userData.Base.Password != password {
-		return false
-	}
-	return true
-}
-
-var (
-	ErrLogicError        = errors.New("logic error")
-	ErrUserIdNotExist    = errors.New("user id not exist")
-	ErrIncorrectPassword = errors.New("incorrect password")
-	ErrInvalidLoginType  = errors.New("invalid login type")
-	ErrUserHasLoggedIn   = errors.New("user has logged in")
-	ErrInvalidCategory   = errors.New("invalid category")
-)
-
-func (thls *UserInfoManager) LoginUser(conn *wscmanager.WSConnection, req *txstruct.LoginReq) error {
-	var err error
+//LoginUser 用[string]代替[error]
+func (thls *UserInfoManager) LoginUser(conn *wscmanager.WSConnection, req *txstruct.LoginReq) string {
+	var msg string
 	for range "1" {
-		if !thls.UserAndPasswordIsOk(req.UserID, req.Password) {
-			err = ErrIncorrectPassword
+		if conn.ExtraData != nil {
+			msg = ErrConnectionIsLoggedOn
 			break
 		}
-
+		if !thls.PasswordOk(req.UserID, req.Password) {
+			msg = ErrIncorrectPassword
+			break
+		}
 		if (LoginTypeDEFAULT < req.Way && req.Way < LoginTypeEND) == false {
-			err = ErrInvalidLoginType
+			msg = ErrInvalidLoginType
 			break
 		}
-		curLoginInfo := thls.allUser[req.UserID-1].State[req.Way-1]
-		if curLoginInfo.conn != nil && !req.ForceLogin {
-			err = ErrUserHasLoggedIn
+		sInfo := thls.allUser[req.UserID-1].State[req.Way-1]
+		if sInfo.conn != nil && !req.ForceLogin {
+			msg = ErrUserHasLoggedIn
 			break
 		}
-		if curLoginInfo.conn != nil {
+		if sInfo.conn != nil {
 			//TODO:关闭之前,发送一个"您被踢下线了"的消息
-			curLoginInfo.conn.Close()
+			sInfo.conn.Close()
 		}
 
-		curLoginInfo.conn = conn
-		//TODO:给连接附加登录信息的结构体指针
-		conn.ExtraData = &UserTempData{tInfo: thls.allUser[req.UserID-1], sInfo: curLoginInfo}
+		sInfo.conn = conn
+		conn.ExtraData = &UserTempData{tInfo: thls.allUser[req.UserID-1], sInfo: sInfo}
 
 		if 0 <= req.LastMsgID {
-			curLoginInfo.LastRecvID = req.LastMsgID
+			sInfo.LastRecvID = req.LastMsgID
 			//TODO:哪些消息尚未推送,把它们推送过去
 		}
 	}
-	return err
+	return msg
+}
+
+//PushData omit
+func (thls *UserInfoManager) PushData(data *txstruct.ReportData) {
+	jsonStr := data.ToJSON(true)
+	for _, tInfo := range thls.allUser {
+		if tInfo == nil {
+			continue
+		}
+		if !tInfo.SubInfo.ShouldSend(data.UserID, data.Category) {
+			continue
+		}
+		for _, sInfo := range tInfo.State {
+			if sInfo.conn == nil {
+				continue
+			}
+			sInfo.conn.Send(jsonStr)
+		}
+	}
 }
