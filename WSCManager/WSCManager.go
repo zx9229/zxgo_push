@@ -17,19 +17,19 @@ type WSConnection struct {
 	ExtraData    interface{} //附加信息
 }
 
-//Send 略
+//Send omit
 func (thls *WSConnection) Send(v interface{}) error {
 	return websocket.Message.Send(thls.ws, v)
 }
 
-//Close 略
+//Close omit
 func (thls *WSConnection) Close() (err error) {
 	thls.closedByUser = true
 	err = thls.ws.Close()
 	return
 }
 
-//WSConnectionManager 管理器.
+//WSConnectionManager websocket的连接管理器.
 type WSConnectionManager struct {
 	connSet        map[*WSConnection]bool //所有连接的集合.
 	CbConnected    func(conn *WSConnection)
@@ -37,15 +37,16 @@ type WSConnectionManager struct {
 	CbReceive      func(conn *WSConnection, bytes []byte)
 }
 
+//New_WSConnectionManager omit
 func New_WSConnectionManager() *WSConnectionManager {
 	curData := new(WSConnectionManager)
 	curData.connSet = make(map[*WSConnection]bool)
 	return curData
 }
 
-//HandleWebsocket 略
+//HandleWebsocket omit
 func (thls *WSConnectionManager) HandleWebsocket(wsConn *websocket.Conn) {
-	wsc := &WSConnection{ws: wsConn, closedByUser: false}
+	wsc := &WSConnection{ws: wsConn, closedByUser: false, ExtraData: nil}
 
 	var err error
 
@@ -84,14 +85,17 @@ func (thls *WSConnectionManager) HandleWebsocket(wsConn *websocket.Conn) {
 	}
 }
 
+//Example_CbConnected omit
 func Example_CbConnected(conn *WSConnection) {
 	log.Println(fmt.Sprintf("[   Connected][%p]LocalAddr=%v,RemoteAddr=%v", conn, conn.ws.LocalAddr(), conn.ws.RemoteAddr()))
 }
 
+//Example_CbDisconnected omit
 func Example_CbDisconnected(conn *WSConnection, err error) {
 	log.Println(fmt.Sprintf("[Disconnected][%p]err=%v", conn, err))
 }
 
+//Example_CbReceive omit
 func Example_CbReceive(conn *WSConnection, bytes []byte) {
 	log.Println(fmt.Sprintf("[     Receive][%p]data=%v", conn, string(bytes)))
 }

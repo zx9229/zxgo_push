@@ -26,14 +26,14 @@ func New_BusinessService() *BusinessService {
 	curData.methods = make(map[string]reflect.Value)
 	curData.parser = txstruct.New_TxParser()
 	curData.connMngr = wscmanager.New_WSConnectionManager()
+	curData.userMngr = new_UserInfoManager()
+	curData.catgMngr = new_CategoryManager()
 	//
 	curData.methods = curData.calcMethods()
 	curData.connMngr.CbConnected = curData.handleConnected
 	curData.connMngr.CbDisconnected = curData.handleDisconnected
 	curData.connMngr.CbReceive = curData.handleReceive
-	//
-	curData.userMngr = new_UserInfoManager()
-	curData.catgMngr = new_CategoryManager()
+	curData.LastPushID = 0
 	//
 	return curData
 }
